@@ -33,5 +33,5 @@ guide](http://www.mythtv.org/wiki/Menu_theme_development_guide))
     </button>
 
 # Issues
- -you can only set the timer while not in playback
- - to stop a started timer you have to set the invokation time to a time in the past
+    - you can only set the timer while not in playback
+    - to stop a started timer you have to set the invokation time to a time in the past
