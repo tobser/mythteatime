@@ -1,8 +1,6 @@
 include ( ../mythconfig.mak )
 include ( ../libs.pro )
 
-INCLUDEPATH += $${SYSROOT}$${PREFIX}/include/mythtv/libmythtv
-
 QT += network xml sql
 TEMPLATE = lib
 CONFIG += debug plugin 
