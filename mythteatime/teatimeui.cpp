@@ -70,9 +70,29 @@ bool TeaTime::Create(void)
 
     BuildFocusList();
 
+    m_Timer = new QTimer(this);
+    m_Timer->setSingleShot(false);
+    connect(m_Timer, SIGNAL(timeout()), this, SLOT(refreshCountdown()));
+    m_Timer->start(1000);
+
     return true;
 }
 
+void TeaTime::refreshCountdown(void)
+{
+        MythUIButtonListItem* item;
+        TimerData val;
+
+        int count =  m_ButtonList->GetCount();
+
+        for (int i = 0 ; i < count; i++){
+
+            item = m_ButtonList->GetItemAt(i);
+            val = qVariantValue<TimerData>(item->GetData());
+
+            updateBtnText(item, &val);
+        }
+}
 void TeaTime::fillTimerList(void)
 {
     m_ButtonList->Reset();
@@ -84,18 +104,17 @@ void TeaTime::fillTimerList(void)
         MythUIButtonListItem *item = new MythUIButtonListItem(m_ButtonList, "");
 
         item->SetData(qVariantFromValue(*d));
-        
-        InfoMap map;
-        d->toMap(map);
 
-        if (map["time_span"].isEmpty())
-            map["timer_type"] = "Fixed time";
-        else
-            map["timer_type"] = "Duration";
-    
-        item->SetTextFromMap(map);
+        updateBtnText(item, d);
     }
     m_ButtonList->SetRedraw();
+}
+
+void TeaTime::updateBtnText(MythUIButtonListItem* item, TimerData* timerData)
+{
+        InfoMap map;
+        timerData->toMap(map);
+        item->SetTextFromMap(map);
 }
 
 void TeaTime::newClicked(void)

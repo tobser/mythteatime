@@ -219,8 +219,7 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
     QString numberStr;
     numberStr.sprintf("%02d", m_TimeSpinbox->GetValue().toInt() );
 
-    QString time_sp_str = QString("00:%1:00").arg( numberStr);
-    m_Data.Time_Span = QTime::fromString(time_sp_str);
+    m_Data.setTimeSpanFromSecs(numberStr.toInt() * 60);
     m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
 
         //QList<TeaAction>     Exec_Actions;

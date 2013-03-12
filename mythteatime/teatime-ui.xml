@@ -35,6 +35,9 @@
                     <textarea name="text" >
                         <font>baselarge</font>
                         <area>33,5,100%,35</area>
+                        <template>
+                           %(|TIME_LEFT|) %%TEXT%
+                        </template>
                     </textarea>
 
                     <textarea name="timer_type" >

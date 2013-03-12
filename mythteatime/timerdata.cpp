@@ -109,6 +109,24 @@ void TimerData::toMap(InfoMap& map)
         actions += a.Action_Type +" "+ a.Action_Data;
     }
     map["actions"] = actions;
+
+    if (map["time_span"].isEmpty())
+        map["timer_type"] = "Fixed time";
+    else
+        map["timer_type"] = "Duration";
+
+    if (isActive())
+    {
+        QDateTime now = QDateTime::currentDateTime();
+        int secs = now.secsTo(Exec_Date_Time);
+        if (secs > 0)
+        {
+            int h=0 , m =0 , s =0;
+            secsTo(&h, &m, &s, secs);
+            QLatin1Char fill = QLatin1Char('0');
+            map["time_left"] = QString("%1:%2:%3").arg(h,2,10,fill).arg(m,2,10,fill).arg(s,2,10,fill);
+        }
+    }
 }
 
 void TimerData::removeFromDb(void)

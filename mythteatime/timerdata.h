@@ -29,6 +29,12 @@ class TimerData {
         void removeFromDb(void);
         bool saveToDb(void);
         void calcAndSaveExecTime(void);
+        void setTimeSpanFromSecs(int seconds)
+        {
+            int h=0 , m =0 , s =0;
+            secsTo(&h, &m, &s, seconds);
+            Time_Span = QTime(h%24, m, s);
+        };
 
         int                     Id;
         bool                    FixedTime;
@@ -46,6 +52,12 @@ class TimerData {
         void runSysEvent(const QString & sysEventKey);
         void runCommand(const QString cmd);
 	    void initJumpDest();
+        void secsTo(int *h, int *m, int *s, int inSecs)
+        {
+            *h = inSecs / (60 * 60);
+            *m = (inSecs % (60 * 60)) / 60;
+            *s = inSecs % 60;
+        };
 
         MythScreenStack         *m_st ;
         MythUIProgressDialog    *m_pd;

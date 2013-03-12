@@ -33,15 +33,20 @@ class TeaTime : public MythScreenType
         void itemClicked(MythUIButtonListItem *);
         void onEditCompleted(bool close);
 
+    private slots:
+        void refreshCountdown(void);
+
     private:
         void openEditScreen(TimerData *td);
         void fillTimerList(void);
+        void updateBtnText(MythUIButtonListItem* item, TimerData* timerData);
 
         MythUIButton     *m_CancelButton;
         MythUIButton     *m_NewButton;
         MythUIText       *m_InfoText;
         MythUIText       *m_TitleText;
         MythUIButtonList *m_ButtonList;
+        QTimer           *m_Timer;
 };
 
 #endif /* MYTHTEATIME_UI_H*/
