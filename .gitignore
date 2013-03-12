@@ -1,6 +1,12 @@
- In repository we don't need to have:
-# Compiled object files
 *.o
+*.so
 
 # Generated MOC, resource and UI files
 moc_*.cpp
+
+# created by ./configure
+mythconfig.mak
+Makefile
+
+# doxygen
+html/
