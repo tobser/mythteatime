@@ -1,0 +1,6 @@
+ In repository we don't need to have:
+# Compiled object files
+*.o
+
+# Generated MOC, resource and UI files
+moc_*.cpp
