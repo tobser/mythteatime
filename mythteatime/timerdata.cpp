@@ -1,4 +1,4 @@
-#include "teatimeui.h" 
+#include "teatimeui.h"
 #include "timerdata.h"
 
 // myth
@@ -10,6 +10,7 @@
 
 // qt
 #include <QtCore>
+#include <QString>
 #include <QCoreApplication>
 
 TimerData::TimerData(int id)
@@ -61,7 +62,7 @@ QString TimerData::toString(void)
  *  jumpDest["Point"] = "screenname";
  *
  * where "Point" ist the jumppoint name as it has to be provided to
- * GetMythMainWindow()->JumpTo(..) and the screenname hast to be 
+ * GetMythMainWindow()->JumpTo(..) and the screenname hast to be
  * what you get if you are at the jumppoint and call
  * GetMythUI()->GetCurrentLocation()
  *
@@ -70,16 +71,16 @@ void TimerData::initJumpDest()
 {
    jumpDest["Main Menu"]    = "mainmenu";
 
-   // if option "Setup"->"Video"->"Program Guide"->"Show te program guide 
+   // if option "Setup"->"Video"->"Program Guide"->"Show te program guide
    // when starting Live TV" is active, then the target window is always
    // guidegrid
-   jumpDest["Live TV"] = "Playback"; 
+   jumpDest["Live TV"] = "Playback";
    jumpDest["Live TV In Guide"] = "guidegrid";
 
-   jumpDest["Video Browser"]  = 
-   jumpDest["Video Gallery"]  = 
-   jumpDest["Video Listings"] = 
-   jumpDest["Video Default"]  = 
+   jumpDest["Video Browser"]  =
+   jumpDest["Video Gallery"]  =
+   jumpDest["Video Listings"] =
+   jumpDest["Video Default"]  =
    jumpDest["Video Manager"]  = "mythvideo";
 
    jumpDest["Play music"]             = "playmusic";
@@ -88,10 +89,10 @@ void TimerData::initJumpDest()
 
    jumpDest["MythGallery"] = "mythgallery";
    jumpDest["MythWeather"] = "mythweather";
-   jumpDest["MythNews"]    = "mythnews";     
+   jumpDest["MythNews"]    = "mythnews";
 
-   jumpDest["Standby Mode"]  = "standbymode";     
-   jumpDest["Status Screen"] = "StatusBox";     
+   jumpDest["Standby Mode"]  = "standbymode";
+   jumpDest["Status Screen"] = "StatusBox";
 }
 
 void TimerData::toMap(InfoMap& map)
@@ -137,7 +138,7 @@ void TimerData::removeFromDb(void)
     MSqlQuery query(MSqlQuery::InitCon());
     query.prepare("DELETE FROM `teatime_rundata` WHERE `timer_id` = :TID");
     query.bindValue(":TID",Id);
-    
+
     if (!query.exec())
     {
         QString msg = QString("Could not delete actions of timer %1. %2")
@@ -147,7 +148,7 @@ void TimerData::removeFromDb(void)
         return;
     }
     LOG_Tea(LOG_INFO, QString("Actions for %1 deleted.").arg(Id));
-    
+
     query.prepare("DELETE FROM `teatime` WHERE `Id` = :TID");
     query.bindValue(":TID", Id);
     if (!query.exec())
@@ -172,7 +173,7 @@ bool TimerData::init(void)
     MSqlQuery query(MSqlQuery::InitCon());
     query.prepare("SELECT "
               " message_text,"      // 0
-              " exec_date_time, "   // 1 
+              " exec_date_time, "   // 1
               " date_time, "        // 2
               " time_span, "        // 3
               " pause_playback "   // 4
@@ -238,12 +239,20 @@ void TimerData::exec(void)
     if (Pause_Playback)
         sl << "pauseplayback";
 
-    LOG_Tea(LOG_INFO, QString("Popup: %1").arg(Message_Text));
-    MythEvent* me = new MythEvent(MythEvent::MythUserMessage, Message_Text, sl);
-    QCoreApplication::instance()->postEvent(mainWin, me);
-    sleep(2);
-
     int cnt = Exec_Actions.count();
+    int wait = 2;
+    QString popup_message = Message_Text;
+    if (cnt > 0)
+    {
+        QString info = QString("\n\n%1 actions will be run in %2s").arg(cnt).arg(wait);
+        popup_message.append(info);
+    }
+
+    LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
+    MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
+    QCoreApplication::instance()->postEvent(mainWin, me);
+    sleep(wait);
+
     if (cnt == 0)
         return;
 
@@ -255,7 +264,7 @@ void TimerData::exec(void)
     for (int i=0; i < cnt; i++)
     {
         TeaAction a = Exec_Actions[i];
-        m_pd->SetMessage(a.Action_Type +": " +a.Action_Data); 
+        m_pd->SetMessage(a.Action_Type +": " +a.Action_Data);
         m_pd->SetProgress(i);
         if (a.Action_Type == "JumpPoint")
         {
@@ -317,13 +326,13 @@ void TimerData::jumpToAndWaitArrival(const QString & target)
     QString expected = jumpDest[target];
     QTime timer;
     timer.start();
-    
+
     while (GetMythUI()->GetCurrentLocation() != expected)
     {
         if (timer.elapsed() > 10000)
         {
             LOG_Tea(LOG_WARNING, QString("%1 != %2")
-                .arg(GetMythUI()->GetCurrentLocation()).arg(expected)); 
+                .arg(GetMythUI()->GetCurrentLocation()).arg(expected));
             LOG_Tea(LOG_WARNING, QString("Jump to %1 not completed in time.")
                         .arg (target));
             return;
@@ -369,19 +378,19 @@ bool TimerData::saveToDb(void)
 
         Id = query.lastInsertId().toInt();
     }
-    
+
     query.prepare( "UPDATE `teatime` SET "
                     "`message_text` = :TEXT "
-                    ", `exec_date_time` = :EXECT " 
-                    ", `date_time` = :DATETIME " 
-                    ", `time_span` = :TIMESPAN " 
-                    ", `pause_playback` = :PAUSE " 
+                    ", `exec_date_time` = :EXECT "
+                    ", `date_time` = :DATETIME "
+                    ", `time_span` = :TIMESPAN "
+                    ", `pause_playback` = :PAUSE "
                     "WHERE `id` =:ID ");
 
     if (Message_Text.isEmpty())
         query.bindValue(":TEXT", Id);
     else
-        query.bindValue(":TEXT", Message_Text); 
+        query.bindValue(":TEXT", Message_Text);
 
     query.bindValue(":EXECT", QVariant());
 
@@ -410,9 +419,9 @@ bool TimerData::saveToDb(void)
     }
 
     query.prepare("DELETE FROM `teatime_rundata` WHERE `timer_id` = :TID");
-    query.bindValue(":TID", Id); 
+    query.bindValue(":TID", Id);
     query.exec();
-    
+
     query.prepare("INSERT INTO `teatime_rundata` "
                     "(timer_id, run_order, type, data) "
                     " VALUES "
