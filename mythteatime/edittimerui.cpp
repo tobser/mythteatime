@@ -15,7 +15,6 @@ EditTimer::EditTimer(MythScreenStack *parent, TimerData * timer):
     m_TimeEdit(NULL),
     m_MessageTextEdit(NULL),
     m_FixedTimeCb(NULL),
-    m_PauseCb(NULL),
     m_Actions(NULL),
     m_Data(timer)
 {
@@ -59,7 +58,6 @@ bool EditTimer::Create(void)
     UIUtilE::Assign(this, m_TimeSpinbox, "time_span", &err);
     UIUtilE::Assign(this, m_FixedTimeCb, "fixed_time", &err);
     UIUtilE::Assign(this, m_TimeEdit, "time", &err);
-    UIUtilE::Assign(this, m_PauseCb, "pause_playback", &err);
     UIUtilE::Assign(this, m_Actions, "action_list", &err);
 
     if (err)
@@ -107,8 +105,6 @@ bool EditTimer::Create(void)
             m_TimeEdit->SetText(m_Data.Date_Time.toString());
         }
     }
-    if (m_Data.Pause_Playback)
-        m_PauseCb->SetCheckState(true);
 
     buildActionButtonList();
 
@@ -118,7 +114,7 @@ bool EditTimer::Create(void)
         SetFocusWidget(m_MessageTextEdit);
     else
         SetFocusWidget(m_SaveAndStartButton);
-    
+
     LOG_Tea(LOG_INFO, QString("Editor for %1 created.")
                         .arg(m_Data.toString()));
 
@@ -222,9 +218,6 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
     m_Data.setTimeSpanFromSecs(numberStr.toInt() * 60);
     m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
 
-        //QList<TeaAction>     Exec_Actions;
-    m_Data.Pause_Playback = m_PauseCb->GetBooleanCheckState();
-    
     return true;
 }
 

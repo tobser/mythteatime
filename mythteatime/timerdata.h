@@ -38,7 +38,6 @@ class TimerData {
 
         int                     Id;
         bool                    FixedTime;
-        bool                    Pause_Playback;
         QString                 Message_Text;
         QDateTime               Exec_Date_Time;
         QDateTime               Date_Time;

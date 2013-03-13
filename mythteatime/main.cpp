@@ -30,6 +30,7 @@ static void setupKeys(void)
 
 static bool CreateTable(MSqlQuery query)
 {
+    LOG_Tea(LOG_INFO, "Creating initial database talbes");
     bool success = query.exec(
             " CREATE TABLE IF NOT EXISTS `teatime`  ("
             "   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,"
@@ -80,9 +81,26 @@ static bool CreateTable(MSqlQuery query)
 
     query.exec(q);
 
+    LOG_Tea(LOG_INFO, "Creating initial database tables completed successfully.");
     return true;
 }
+static bool UpdateTableV1(MSqlQuery query)
+{
+    LOG_Tea(LOG_INFO, "upgading database tables to version 2.");
+    // remove paus playback setting, we try allways to do it now
+    bool success = query.exec("ALTER TABLE `mythconverg`.`teatime` DROP `pause_playback`");
+    if (!success)
+    {
+        LOG_Tea(LOG_WARNING, "upgade to table verison 2 failed.");
+        LOG_Tea(LOG_WARNING, query.lastError().text());
+        return false;
+    }
 
+    gCoreContext->SaveSettingOnHost("TeatimeDBSchemaVer", "2", NULL);
+    LOG_Tea(LOG_INFO, "upgading database tables to version 2 successfully completed.");
+    return true;
+
+}
 static bool updateDb()
 {
     LOG_Tea(LOG_INFO, "Checking DB state.");
@@ -101,6 +119,14 @@ static bool updateDb()
         case 0:
             {
                 if (!CreateTable(query))
+                {
+                    success = false;
+                    break;
+                }
+            }
+        case 1:
+            {
+                if (!UpdateTableV1(query))
                 {
                     success = false;
                     break;

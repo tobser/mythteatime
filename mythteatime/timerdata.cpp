@@ -39,7 +39,6 @@ TimerData::TimerData(TimerData * td )
         Date_Time = td->Date_Time;
         Time_Span = td->Time_Span;
         Exec_Actions = td->Exec_Actions;
-        Pause_Playback = td->Pause_Playback;
     }
     initJumpDest();
 }
@@ -175,8 +174,7 @@ bool TimerData::init(void)
               " message_text,"      // 0
               " exec_date_time, "   // 1
               " date_time, "        // 2
-              " time_span, "        // 3
-              " pause_playback "   // 4
+              " time_span "        // 3
             "from `teatime` WHERE id = :TID");
     query.bindValue(":TID", Id);
 
@@ -200,8 +198,6 @@ bool TimerData::init(void)
     Time_Span = QTime::fromString(query.value(3).toString(), "hh:mm:ss");
 
     FixedTime = Date_Time.isValid();
-
-    Pause_Playback = (query.value(4).toString() == "yes");
 
     query.prepare("SELECT type,data FROM teatime_rundata "
                      "WHERE timer_id = :TID ORDER BY run_order ASC");
@@ -235,9 +231,6 @@ void TimerData::exec(void)
         return;
     }
 
-    QStringList sl ;
-    if (Pause_Playback)
-        sl << "pauseplayback";
 
     int cnt = Exec_Actions.count();
     int wait = 2;
@@ -249,6 +242,8 @@ void TimerData::exec(void)
     }
 
     LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
+    QStringList sl ;
+    sl << "pauseplayback"; // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
     MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
     QCoreApplication::instance()->postEvent(mainWin, me);
     sleep(wait);
@@ -384,7 +379,6 @@ bool TimerData::saveToDb(void)
                     ", `exec_date_time` = :EXECT "
                     ", `date_time` = :DATETIME "
                     ", `time_span` = :TIMESPAN "
-                    ", `pause_playback` = :PAUSE "
                     "WHERE `id` =:ID ");
 
     if (Message_Text.isEmpty())
@@ -407,7 +401,6 @@ bool TimerData::saveToDb(void)
         query.bindValue(":DATETIME", QVariant());
     }
 
-    query.bindValue(":PAUSE", (Pause_Playback? "yes" : "no"));
     query.bindValue(":ID", Id);
 
     if(!query.exec())

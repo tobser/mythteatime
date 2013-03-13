@@ -224,19 +224,6 @@
             </statetype>
         </checkbox>
 
-        <textarea name="pause_playback_description">
-            <area>100,290,100%-100,30</area>
-            <align>vcenter</align>
-            <value>
-                Pause playback (Will only work if your frontend contains 
-                the patches from ticket #10894).
-            </value>
-        </textarea>
-
-        <checkbox name="pause_playback" from="fixed_time">
-            <area>50,290,30,30</area>
-        </checkbox>
-
         <button name="add_action" from="basewidebutton"> 
             <area>50,340,100%-50,40</area>
             <value>Add action</value>
