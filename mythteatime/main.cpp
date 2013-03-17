@@ -4,6 +4,7 @@
 // QT headers
 #include <QApplication>
 #include <QTimer>
+#include <QString>
 
 // MythTV headers
 #include <mythcontext.h>
@@ -113,6 +114,19 @@ static bool updateDb()
 
     int dbVer =  gCoreContext->GetSetting("TeatimeDBSchemaVer", "0").toInt();
 
+    int currentDbVersion = 2;
+
+    if (dbVer > currentDbVersion )
+    {
+        LOG_Tea(LOG_WARNING, QString("Need schema version %1, but found %2.")
+                .arg(currentDbVersion).arg(dbVer));
+        QString message = QObject::tr("Failed to start Mythteatime (database schema mismatch).\n\n") +
+                          QObject::tr("Please upgrade the Mythteatime plugin.");
+        MythEvent* me = new MythEvent(MythEvent::MythUserMessage, message);
+        QCoreApplication::instance()->postEvent(GetMythMainWindow(), me);
+        return false;
+    }
+
     bool success = true;
     switch(dbVer)
     {
@@ -178,9 +192,7 @@ int mythplugin_init(const char *libversion)
         return -1;
 
     if (!updateDb())
-    {
-        //ToDo: annoy user with error popup?
-    }
+        return -2;
 
     setupKeys();
 
@@ -188,7 +200,7 @@ int mythplugin_init(const char *libversion)
     if (!gTeaData->initialize())
     {
         LOG_Tea(LOG_WARNING, "Failed to init TeaTimeData.");
-        return -1;
+        return -3;
     }
 
     LOG_Tea(LOG_INFO, "Teatime plugin started.");
