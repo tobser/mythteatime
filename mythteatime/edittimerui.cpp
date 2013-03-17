@@ -25,7 +25,7 @@ bool EditTimer::Create(void)
     // Load the theme for this screen
     if (!LoadWindowFromXML("teatime-ui.xml", "edit_teatimer", this))
     {
-        LOG_Tea(LOG_WARNING, "window teatime in teatime-ui.xml is missing."); 
+        LOG_Tea(LOG_WARNING, "window teatime in teatime-ui.xml is missing.");
         return  false;
     }
 
@@ -62,20 +62,20 @@ bool EditTimer::Create(void)
 
     if (err)
     {
-        LOG_Tea(LOG_WARNING, "Theme is missing required elements."); 
+        LOG_Tea(LOG_WARNING, "Theme is missing required elements.");
         return  false;
     }
 
-    
+
     connect(m_Actions, SIGNAL(itemClicked(MythUIButtonListItem *)),
             this, SLOT(onActionItemClicked(MythUIButtonListItem *)));
     connect(m_SaveButton, SIGNAL(Clicked()),
             this, SLOT(onSaveClicked()),Qt::QueuedConnection);
     connect(m_SaveAndStartButton, SIGNAL(Clicked()),
             this,  SLOT(onSaveAndStartClicked()));
-    connect(m_DeleteButton, SIGNAL(Clicked()), 
+    connect(m_DeleteButton, SIGNAL(Clicked()),
             this, SLOT(onDeleteClicked()));
-    connect(m_AddActionButton, SIGNAL(Clicked()), 
+    connect(m_AddActionButton, SIGNAL(Clicked()),
             this, SLOT(onAddActionClicked()));
     connect(m_FixedTimeCb, SIGNAL(toggled(bool)),
             this, SLOT(fixedTimeCbToggled(bool)));
@@ -96,11 +96,13 @@ bool EditTimer::Create(void)
             int mins = m_Data.Time_Span.hour() * 60;
             mins += m_Data.Time_Span.minute();
             m_TimeSpinbox->SetValue(mins);
+            m_TimeEdit->Hide();
         }
         else
         {
             m_FixedTimeCb->SetCheckState(true);
             m_TimeSpinbox->SetEnabled(false);
+            m_TimeSpinbox->Hide();
             m_TimeEdit->SetEnabled(true);
             m_TimeEdit->SetText(m_Data.Date_Time.toString());
         }
@@ -158,8 +160,8 @@ void EditTimer::onDeleteClicked(void)
 
 void EditTimer::onSaveClicked(void)
 {
-    LOG_Tea(LOG_INFO, "Save"); 
-    
+    LOG_Tea(LOG_INFO, "Save");
+
     QString err;
     if (!updateLocalDataFromUi(err))
     {
@@ -168,7 +170,7 @@ void EditTimer::onSaveClicked(void)
     }
 
     m_Data.saveToDb();
-    
+
     emit editComplete(false);
     Close();
 }
@@ -181,13 +183,13 @@ void EditTimer::customEvent(QEvent *event)
 
         TeaAction ta;
         ta.Action_Data = dce->GetData().toString();
-        if (dce->GetId() == "ADD_JUMPPOINT") 
+        if (dce->GetId() == "ADD_JUMPPOINT")
         {
             LOG_Tea(LOG_INFO, ta.Action_Data);
             ta.Action_Type = "JumpPoint";
             m_Data.Exec_Actions << ta;
         }
-        if (dce->GetId() == "ADD_SYSEVENT") 
+        if (dce->GetId() == "ADD_SYSEVENT")
         {
             LOG_Tea(LOG_INFO, ta.Action_Data);
             ta.Action_Type = "SysEvent";
@@ -223,7 +225,7 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
 
 void EditTimer::onSaveAndStartClicked(void)
 {
-    LOG_Tea(LOG_INFO, "Save and Run"); 
+    LOG_Tea(LOG_INFO, "Save and Run");
     QString err;
     if (!updateLocalDataFromUi(err))
     {
@@ -233,7 +235,7 @@ void EditTimer::onSaveAndStartClicked(void)
 
     m_Data.saveToDb();
     m_Data.calcAndSaveExecTime();
-    
+
     emit editComplete(true);
     Close();
 }
@@ -263,7 +265,7 @@ void EditTimer::editCustomCmd(QString cmd)
                                      "display cmd inputbox."));
         return;
     }
-    MythTextInputDialog *d = new MythTextInputDialog(st, 
+    MythTextInputDialog *d = new MythTextInputDialog(st,
                                     tr("Create Custom Command"),
                                     FilterNone,
                                     false,
@@ -286,7 +288,7 @@ void EditTimer::jumppointMenu(void)
         return;
 
     dialog->SetReturnEvent(this, "ADD_JUMPPOINT");
-    
+
     QMap<QString,QString>::iterator i = m_Data.jumpDest.begin();
     while(i != m_Data.jumpDest.end())
     {
@@ -353,7 +355,7 @@ MythDialogBox* EditTimer::createDialog(const QString title)
     }
     MythDialogBox *dialog = new MythDialogBox(title, st, "menu");
 
-    if (!dialog->Create()) 
+    if (!dialog->Create())
     {
         delete dialog;
         LOG_Tea(LOG_WARNING, QString("Could not create dialogbox \"%1\".")
@@ -370,7 +372,7 @@ void EditTimer::onRemoveAction(void)
      MythUIButtonListItem *item = m_Actions->GetItemCurrent();
      if (!item)
          return;
-     
+
      int index = item->GetData().toInt();
      m_Data.Exec_Actions.removeAt(index);
      buildActionButtonList();
@@ -381,7 +383,7 @@ void EditTimer::moveAction(bool up)
      MythUIButtonListItem *item = m_Actions->GetItemCurrent();
      if (!item)
          return;
-     
+
      int index = item->GetData().toInt();
      int newIdx = (up ? (index -1) : (index + 1));
 
@@ -403,16 +405,20 @@ void EditTimer::fixedTimeCbToggled(bool checked)
     if (checked)
     {
         m_TimeSpinbox->SetEnabled(false);
+        m_TimeSpinbox->Hide();
+        m_TimeEdit->SetEnabled(true);
+        m_TimeEdit->Show();
         if (m_TimeEdit->GetText().isEmpty())
         {
-            QDateTime t = QDateTime::currentDateTime();  
+            QDateTime t = QDateTime::currentDateTime();
             m_TimeEdit->SetText(t.toString());
         }
-        m_TimeEdit->SetEnabled(true);
     }
     else
     {
+        m_TimeEdit->SetEnabled(false);
+        m_TimeEdit->Hide();
         m_TimeSpinbox->SetEnabled(true);
-        m_TimeEdit->SetEnabled(false);        
+        m_TimeSpinbox->Show();
     }
 }
