@@ -33,6 +33,7 @@
                 <state name="active">
                     <area>0,0,100%,100</area>
                     <textarea name="text" >
+                        <area>0,0,100%,100</area>
                         <font>baselarge</font>
                         <area>33,5,100%,35</area>
                         <template>
@@ -224,6 +225,11 @@
             <area>50,250,50%-25,40</area>
         </textedit>
 
+        <button name="reoccurrence" from="basewidebutton">
+            <area>50%+25,250,100%-50,40</area>
+            <value>One shot</value>
+        </button>
+
         <button name="add_action" from="basewidebutton">
             <area>50,340,100%-50,40</area>
             <value>Add action</value>
@@ -293,4 +299,90 @@
             <value>Cancel</value>
         </button>
 </window>
+
+    <window name="select_reoccurrence">
+        <area>0,0,100%,100%</area>
+
+        <animation trigger="AboutToShow">
+            <section duration="120">
+                <alpha start="0" end="255" easingcurve="OutQuart"/>
+                <zoom start="0" end="100" easingcurve="OutQuart"/>
+            </section>
+        </animation>
+
+        <animation trigger="AboutToHide">
+            <section duration="120">
+                <alpha start="255" end="0" easingcurve="InQuart"/>
+                <zoom start="100" end="0" easingcurve="InQuart"/>
+            </section>
+        </animation>
+
+        <shape name="background">
+            <area>320,110,640,500</area>
+            <type>roundbox</type>
+            <cornerradius>10</cornerradius>
+            <line color="#FFFFFF" alpha="255" width="1" />
+            <fill color="Green" alpha="255" />
+        </shape>
+
+        <textarea name="title">
+            <area>320,110,640,60</area>
+            <multiline>yes</multiline>
+            <align>allcenter</align>
+            <value>Select type of reoccurence</value>
+        </textarea>
+
+        <buttonlist name="list">
+            <area>320,170,640,380</area>
+            <layout>vertical</layout>
+            <spacing>4</spacing>
+            <wrapstyle>selection</wrapstyle>
+            <buttonarea>0,0,100%,100%</buttonarea>
+            <statetype name="buttonitem">
+                <area>0,0,100%,30</area>
+                <state name="active">
+                    <area>0,0,100%,30</area>
+                    <textarea name="text" >
+                        <area>40,5,100%-40,25</area>
+                        <value>foobar</value>
+                    </textarea>
+
+                    <statetype name="buttoncheck">
+                        <position>91%,5</position>
+                        <state type="off">
+                            <imagetype name="checkoff">
+                                <filename>lb-check-empty.png</filename>
+                            </imagetype>
+                        </state>
+                        <state type="half">
+                            <imagetype name="checkhalf">
+                                <filename>lb-check-half.png</filename>
+                            </imagetype>
+                        </state>
+                        <state type="full">
+                            <imagetype name="checkfull">
+                                <filename>lb-check-full.png</filename>
+                            </imagetype>
+                        </state>
+                    </statetype>
+
+                </state>
+                <state name="selectedactive" from="active">
+                    <shape name="selectbar">
+                        <area>0,0,100%,30</area>
+                        <type>roundbox</type>
+                        <line color="#999999" alpha="255" width="2" />
+                        <cornerradius>13</cornerradius>
+                    </shape>
+                </state>
+                <state name="selectedinactive" from="active" />
+            </statetype>
+        </buttonlist>
+
+        <button name="ok" from="basewidebutton">
+            <area>500,550,80,40</area>
+            <value>OK</value>
+        </button>
+
+    </window>
 </mythuitheme>

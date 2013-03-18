@@ -1,4 +1,5 @@
 #include <edittimerui.h>
+#include <selectreoccurrenceui.h>
 //myth
 #include <mythmainwindow.h>
 
@@ -9,6 +10,7 @@ EditTimer::EditTimer(MythScreenStack *parent, TimerData * timer):
     m_DeleteButton(NULL),
     m_CancelButton(NULL),
     m_AddActionButton(NULL),
+    m_ReoccurrenceButton(NULL),
     m_TimeSpinbox(NULL),
     m_InfoText(NULL),
     m_TitleText(NULL),
@@ -59,6 +61,7 @@ bool EditTimer::Create(void)
     UIUtilE::Assign(this, m_FixedTimeCb, "fixed_time", &err);
     UIUtilE::Assign(this, m_TimeEdit, "time", &err);
     UIUtilE::Assign(this, m_Actions, "action_list", &err);
+    UIUtilE::Assign(this, m_ReoccurrenceButton, "reoccurrence", &err);
 
     if (err)
     {
@@ -79,6 +82,8 @@ bool EditTimer::Create(void)
             this, SLOT(onAddActionClicked()));
     connect(m_FixedTimeCb, SIGNAL(toggled(bool)),
             this, SLOT(fixedTimeCbToggled(bool)));
+    connect(m_ReoccurrenceButton, SIGNAL(Clicked()),
+            this, SLOT(onReoccurrenceClicked()));
 
 
     m_FixedTimeCb->SetCheckState(false);
@@ -101,10 +106,15 @@ bool EditTimer::Create(void)
         else
         {
             m_FixedTimeCb->SetCheckState(true);
+
             m_TimeSpinbox->SetEnabled(false);
             m_TimeSpinbox->Hide();
+
             m_TimeEdit->SetEnabled(true);
             m_TimeEdit->SetText(m_Data.Date_Time.toString());
+
+            m_ReoccurrenceButton->SetEnabled(true);
+            m_ReoccurrenceButton->Show();
         }
     }
 
@@ -408,6 +418,8 @@ void EditTimer::fixedTimeCbToggled(bool checked)
         m_TimeSpinbox->Hide();
         m_TimeEdit->SetEnabled(true);
         m_TimeEdit->Show();
+        m_ReoccurrenceButton->SetEnabled(true);
+        m_ReoccurrenceButton->Show();
         if (m_TimeEdit->GetText().isEmpty())
         {
             QDateTime t = QDateTime::currentDateTime();
@@ -418,7 +430,27 @@ void EditTimer::fixedTimeCbToggled(bool checked)
     {
         m_TimeEdit->SetEnabled(false);
         m_TimeEdit->Hide();
+        m_ReoccurrenceButton->SetEnabled(false);
+        m_ReoccurrenceButton->Hide();
         m_TimeSpinbox->SetEnabled(true);
         m_TimeSpinbox->Show();
     }
+}
+
+void EditTimer::onReoccurrenceClicked(void)
+{
+    MythScreenStack *st = GetMythMainWindow()->GetStack("popup stack");
+    if (!st)
+    {
+        LOG_Tea(LOG_WARNING, QString("Could not get \"popup stack\"")); 
+        return ;
+    }
+
+    SelectReoccurrence *sel = new SelectReoccurrence(st);
+    if (!sel->Create())
+    {
+        LOG_Tea(LOG_WARNING, QString("Could not create select reoccurrence popup."));
+        return ;
+    }
+    st->AddScreen(sel);
 }

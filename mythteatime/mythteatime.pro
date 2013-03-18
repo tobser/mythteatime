@@ -17,9 +17,10 @@ INSTALLS += uifiles
 
 # Input
 HEADERS += teatimeui.h data.h timerdata.h
-HEADERS += edittimerui.h
+HEADERS += edittimerui.h  selectreoccurrenceui.h
+
 SOURCES += main.cpp teatimeui.cpp data.cpp timerdata.cpp
-SOURCES += edittimerui.cpp
+SOURCES += edittimerui.cpp selectreoccurrenceui.cpp
 
 doxy.target = doc 
 doxy.commands = doxygen Doxyfile;

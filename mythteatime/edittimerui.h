@@ -41,6 +41,7 @@ class EditTimer : public MythScreenType
         void moveActionUp(void) { moveAction(true); };
         void moveActionDown(void) { moveAction(false); };
         void newCustomCmd(void);
+        void onReoccurrenceClicked(void);
 
     signals:
         void editComplete(bool close);
@@ -58,6 +59,7 @@ class EditTimer : public MythScreenType
         MythUIButton     *m_DeleteButton;
         MythUIButton     *m_CancelButton;
         MythUIButton     *m_AddActionButton;
+        MythUIButton     *m_ReoccurrenceButton;
         MythUISpinBox    *m_TimeSpinbox;
         MythUIText       *m_InfoText;
         MythUIText       *m_TitleText;
