@@ -116,10 +116,11 @@ bool EditTimer::Create(void)
             m_ReoccurrenceButton->SetEnabled(true);
             m_ReoccurrenceButton->Show();
         }
+
+        // set the correct button text:
+        onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
     }
 
-    // set the correct button text:
-    onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
 
     buildActionButtonList();
 
