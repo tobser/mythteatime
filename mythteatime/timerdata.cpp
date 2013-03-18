@@ -175,7 +175,8 @@ bool TimerData::init(void)
               " message_text,"      // 0
               " exec_date_time, "   // 1
               " date_time, "        // 2
-              " time_span "        // 3
+              " time_span, "        // 3
+              " reoccurrence "      // 4
             "from `teatime` WHERE id = :TID");
     query.bindValue(":TID", Id);
 
@@ -197,6 +198,7 @@ bool TimerData::init(void)
     Exec_Date_Time = query.value(1).toDateTime();
     Date_Time = query.value(2).toDateTime();
     Time_Span = QTime::fromString(query.value(3).toString(), "hh:mm:ss");
+    Reoccurrence = query.value(4).toString();
 
     FixedTime = Date_Time.isValid();
 
@@ -380,6 +382,7 @@ bool TimerData::saveToDb(void)
                     ", `exec_date_time` = :EXECT "
                     ", `date_time` = :DATETIME "
                     ", `time_span` = :TIMESPAN "
+                    ", `reoccurrence` = :REOCC "
                     "WHERE `id` =:ID ");
 
     if (Message_Text.isEmpty())
@@ -388,6 +391,8 @@ bool TimerData::saveToDb(void)
         query.bindValue(":TEXT", Message_Text);
 
     query.bindValue(":EXECT", QVariant());
+
+    query.bindValue(":REOCC", Reoccurrence);
 
     if (FixedTime)
     {

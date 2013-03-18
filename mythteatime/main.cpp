@@ -102,6 +102,24 @@ static bool UpdateTableV1(MSqlQuery query)
     return true;
 
 }
+
+static bool UpdateTableV2(MSqlQuery query)
+{
+    LOG_Tea(LOG_INFO, "upgading database tables to version 3.");
+    // remove paus playback setting, we try allways to do it now
+    bool success = query.exec("ALTER TABLE `mythconverg`.`teatime` ADD `reoccurrence` VARCHAR(16) DEFAULT 'one_shot' ");
+    if (!success)
+    {
+        LOG_Tea(LOG_WARNING, "upgade to table verison 3 failed.");
+        LOG_Tea(LOG_WARNING, query.lastError().text());
+        return false;
+    }
+
+    gCoreContext->SaveSettingOnHost("TeatimeDBSchemaVer", "3", NULL);
+    LOG_Tea(LOG_INFO, "upgading database tables to version 3 successfully completed.");
+    return true;
+}
+
 static bool updateDb()
 {
     LOG_Tea(LOG_INFO, "Checking DB state.");
@@ -114,7 +132,7 @@ static bool updateDb()
 
     int dbVer =  gCoreContext->GetSetting("TeatimeDBSchemaVer", "0").toInt();
 
-    int currentDbVersion = 2;
+    int currentDbVersion = 3;
 
     if (dbVer > currentDbVersion )
     {
@@ -141,6 +159,14 @@ static bool updateDb()
         case 1:
             {
                 if (!UpdateTableV1(query))
+                {
+                    success = false;
+                    break;
+                }
+            }
+        case 2:
+            {
+                if (!UpdateTableV2(query))
                 {
                     success = false;
                     break;
