@@ -128,6 +128,28 @@ void TimerData::toMap(InfoMap& map)
             map["time_left"] = QString("%1:%2:%3").arg(h,2,10,fill).arg(m,2,10,fill).arg(s,2,10,fill);
         }
     }
+
+    QString reocc;
+    if (Reoccurrence.contains("daily"))
+    {
+        reocc = QObject::tr("Daily");
+    }
+    else if (Reoccurrence.contains(","))
+    {
+        QStringList days = Reoccurrence.split(",", QString::SkipEmptyParts);
+        for (int i = 0; i < days.count(); i++)
+        {
+            if (i > 0 )
+                reocc += ", ";
+            reocc += QDate::longDayName(days[i].toInt());
+        }
+    }
+    else
+    {
+        reocc= QObject::tr("One shot");
+    }
+
+    map["reoccurrence"]= reocc;
 }
 
 void TimerData::removeFromDb(void)

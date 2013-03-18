@@ -44,7 +44,7 @@
                     <textarea name="timer_type" >
                         <area>100,45,100%,25</area>
                         <template>
-                            %TIMER_TYPE%: %TIME_SPAN%%DATE_TIME%
+                            %TIMER_TYPE%: %TIME_SPAN%%DATE_TIME% %(|REOCCURRENCE|)%
                         </template>
                     </textarea>
                     <textarea name="actions" >

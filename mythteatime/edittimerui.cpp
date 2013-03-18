@@ -118,6 +118,9 @@ bool EditTimer::Create(void)
         }
     }
 
+    // set the correct button text:
+    onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
+
     buildActionButtonList();
 
     BuildFocusList();
