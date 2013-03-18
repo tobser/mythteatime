@@ -446,11 +446,28 @@ void EditTimer::onReoccurrenceClicked(void)
         return ;
     }
 
-    SelectReoccurrence *sel = new SelectReoccurrence(st);
+    SelectReoccurrence *sel = new SelectReoccurrence(st, m_Data.Reoccurrence);
     if (!sel->Create())
     {
         LOG_Tea(LOG_WARNING, QString("Could not create select reoccurrence popup."));
         return ;
     }
+    connect(sel, SIGNAL(SelectionCompleted(QString)),
+                this, SLOT(onReoccurrenceSelctionComplete(QString)));
+
     st->AddScreen(sel);
+}
+void EditTimer::onReoccurrenceSelctionComplete(const QString selection)
+{
+    LOG_Tea(LOG_INFO, "Received selection "+ selection);
+    m_Data.Reoccurrence = selection;
+    QString text;
+    if (selection.contains("daily"))
+        text = tr("Daily");
+    else if (selection.contains("one_shot"))
+        text = tr("One shot");
+    else
+        text= tr("Days: %1").arg(selection);
+
+    m_ReoccurrenceButton->SetText(text);
 }

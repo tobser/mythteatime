@@ -39,6 +39,7 @@ TimerData::TimerData(TimerData * td )
         Date_Time = td->Date_Time;
         Time_Span = td->Time_Span;
         Exec_Actions = td->Exec_Actions;
+        Reoccurrence = td->Reoccurrence;
     }
     initJumpDest();
 }

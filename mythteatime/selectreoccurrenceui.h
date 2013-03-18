@@ -9,11 +9,15 @@ class SelectReoccurrence : public MythScreenType
     Q_OBJECT
 
     public:
-        SelectReoccurrence(MythScreenStack *parent);
+        SelectReoccurrence(MythScreenStack *parent, QString reoccurrence);
         bool Create(void);
 
-        private slots:
+    signals:
+        void SelectionCompleted(const QString selection);
+
+    private slots:
             void onItemClicked(MythUIButtonListItem *item);
+            void onOkClicked(void);
 
     private:
         void addButton(const QString text, const QString id);
@@ -21,5 +25,6 @@ class SelectReoccurrence : public MythScreenType
         bool AllDaysChecked();
         MythUIButtonList *m_ReoccList;
         MythUIButton     *m_OkButton;
+        QString          m_Selection;
 };
 #endif

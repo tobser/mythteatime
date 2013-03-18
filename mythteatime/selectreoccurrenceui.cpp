@@ -1,11 +1,15 @@
 #include <selectreoccurrenceui.h>
 #include <mythuibuttonlist.h>
 
-SelectReoccurrence::SelectReoccurrence (MythScreenStack *parent):
+SelectReoccurrence::SelectReoccurrence (MythScreenStack *parent, QString selection):
     MythScreenType(parent, "select_reoccurrence"),
     m_ReoccList(NULL),
     m_OkButton(NULL)
 {
+    if (selection.isEmpty())
+        selection = "one_shot";
+
+    m_Selection=selection;
 }
 
 bool SelectReoccurrence::Create(void)
@@ -33,11 +37,14 @@ bool SelectReoccurrence::Create(void)
 
     for (int i = 1; i <= 7 ; i++)
     {
-        addButton(QDate::longDayName(i),QString(i));
+        addButton(QDate::longDayName(i),QString::number(i));
     }
 
     connect(m_ReoccList, SIGNAL(itemClicked(MythUIButtonListItem *)),
             this, SLOT(onItemClicked(MythUIButtonListItem*)));
+
+    connect(m_OkButton, SIGNAL(Clicked(void)),
+            this, SLOT(onOkClicked(void)));
 
     BuildFocusList();
 
@@ -105,7 +112,38 @@ bool SelectReoccurrence::AllDaysChecked()
 
 void SelectReoccurrence::addButton(const QString text, const QString id)
 {
-     MythUIButtonListItem *button = new MythUIButtonListItem(m_ReoccList, text,"",true, MythUIButtonListItem::FullChecked);
+    MythUIButtonListItem::CheckState cs = MythUIButtonListItem::NotChecked;
+    if (m_Selection.contains(id))
+        cs = MythUIButtonListItem::FullChecked;
+
+     MythUIButtonListItem *button = new MythUIButtonListItem(m_ReoccList, text,"",true, cs);
      button->SetText(text,"text");
      button->SetData(QVariant(id));
 }
+void SelectReoccurrence::onOkClicked(void)
+{
+    int cnt = m_ReoccList->GetCount();
+    QString selection;
+    for (int i = 0; i < cnt ; i++)
+    {
+        MythUIButtonListItem * item =  m_ReoccList->GetItemAt(i);
+        if (item->state() == MythUIButtonListItem::FullChecked)
+        {
+            QString data = item->GetData().toString();
+            if (data == "daily" || data == "one_shot")
+            {
+                selection = data;
+                break;
+            }
+
+            if (!selection.isEmpty())
+                selection += ",";
+
+            selection += data;
+        }
+    }
+    LOG_Tea(LOG_INFO, "Selected reoccurrence: " + selection);
+    emit SelectionCompleted(selection);
+    Close();
+}
+

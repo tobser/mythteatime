@@ -42,6 +42,7 @@ class EditTimer : public MythScreenType
         void moveActionDown(void) { moveAction(false); };
         void newCustomCmd(void);
         void onReoccurrenceClicked(void);
+        void onReoccurrenceSelctionComplete(const QString selection);
 
     signals:
         void editComplete(bool close);

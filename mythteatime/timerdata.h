@@ -44,7 +44,7 @@ class TimerData {
         QTime                   Time_Span;
         QList<TeaAction>        Exec_Actions;
 	    QMap <QString, QString> jumpDest;
-
+        QString                 Reoccurrence;
     private:
         void exec(void);
         void jumpToAndWaitArrival(const QString & target);
