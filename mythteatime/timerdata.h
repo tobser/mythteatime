@@ -35,6 +35,10 @@ class TimerData {
             secsTo(&h, &m, &s, seconds);
             Time_Span = QTime(h%24, m, s);
         };
+        bool isReoccurring()
+        {
+            return (Reoccurrence != "one_shot");
+        }
 
         int                     Id;
         bool                    FixedTime;
@@ -51,6 +55,8 @@ class TimerData {
         void runSysEvent(const QString & sysEventKey);
         void runCommand(const QString cmd);
 	    void initJumpDest();
+        void setNextExecutionTime(void);
+        void saveExecTimeToDb(QDateTime nextExecTime);
         void secsTo(int *h, int *m, int *s, int inSecs)
         {
             *h = inSecs / (60 * 60);

@@ -58,9 +58,11 @@ void SelectReoccurrence::onItemClicked(MythUIButtonListItem *item)
     MythUIButtonListItem::CheckState cs = item->state();
     QString id = item->GetData().toString();
 
-
     if (id == "one_shot")
     {
+        if (cs ==MythUIButtonListItem::FullChecked)
+            return;
+
         SetAllItemsCheckState( MythUIButtonListItem::NotChecked);
     }
     else if (id == "daily")

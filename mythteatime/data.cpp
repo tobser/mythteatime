@@ -60,7 +60,7 @@ bool TeaTimeData::initialize(void)
  **/
 void TeaTimeData::reInit(void)
 {
-    shutdown(); 
+    shutdown();
     initialize();
 }
 
@@ -91,7 +91,7 @@ void TeaTimeData::startTimer(void)
         LOG_Tea(LOG_WARNING, "timout signal not connected.");
     }
     else
-    {    
+    {
         m_Timer->start(1000);
         LOG_Tea(LOG_INFO, "Timer started.");
     }
@@ -113,7 +113,9 @@ void TeaTimeData::checkTimers()
             LOG_Tea(LOG_INFO, QString("Executing timer action of: ")
                     .append(val->toString()));
             val->execAsync();
-            it.remove();
+
+            if (!val->isReoccurring())
+                it.remove();
         }
     }
 

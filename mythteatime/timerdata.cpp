@@ -134,7 +134,7 @@ void TimerData::toMap(InfoMap& map)
     {
         reocc = QObject::tr("Daily");
     }
-    else if (Reoccurrence.contains(","))
+    else if (Reoccurrence != "one_shot" && Reoccurrence != "daily")
     {
         QStringList days = Reoccurrence.split(",", QString::SkipEmptyParts);
         for (int i = 0; i < days.count(); i++)
@@ -220,9 +220,11 @@ bool TimerData::init(void)
     Exec_Date_Time = query.value(1).toDateTime();
     Date_Time = query.value(2).toDateTime();
     Time_Span = QTime::fromString(query.value(3).toString(), "hh:mm:ss");
-    Reoccurrence = query.value(4).toString();
 
     FixedTime = Date_Time.isValid();
+
+    Reoccurrence = query.value(4).toString();
+    setNextExecutionTime();
 
     query.prepare("SELECT type,data FROM teatime_rundata "
                      "WHERE timer_id = :TID ORDER BY run_order ASC");
@@ -242,9 +244,69 @@ bool TimerData::init(void)
         a.Action_Data = query.value(1).toString();
         Exec_Actions << a;
     }
+
+
     LOG_Tea(LOG_INFO, QString("%1 active: %2").arg(Id).arg(isActive()));
 
     return true;
+}
+void TimerData::setNextExecutionTime(void)
+{
+    if (Reoccurrence.isEmpty())
+    {
+        Reoccurrence == "one_shot";
+        return;
+    }
+    if (Reoccurrence == "one_shot")
+        return;
+
+    QDateTime nextExec  = QDateTime::currentDateTime();
+    QDateTime now       = QDateTime::currentDateTime();
+
+    if (Reoccurrence == "daily")
+    {
+        if (!Exec_Date_Time.isValid() || now.secsTo(Exec_Date_Time) < 0)
+        {
+            nextExec.setTime(Date_Time.time());
+            if (now.secsTo(nextExec) <0 )
+               nextExec = nextExec.addDays(1);
+
+            saveExecTimeToDb(nextExec);
+        }
+    }
+    else
+    {
+        int todayDoW = now.date().dayOfWeek();
+        QStringList days = Reoccurrence.split(",", QString::SkipEmptyParts);
+        for (int i = 0; i < days.count(); i++)
+        {
+            if (days[i].toInt() >= todayDoW)
+            {
+                nextExec = nextExec.addDays(days[i].toInt() - todayDoW);
+                nextExec.setTime(Date_Time.time());
+                if (QDateTime::currentDateTime() < nextExec)
+                {
+                    saveExecTimeToDb(nextExec);
+                    return;
+                }
+            }
+        }
+
+        // this week is complete, => find first runtime next week
+        int firstExecDoW = days[0].toInt();
+        int daysInFuture =  (7-todayDoW) + firstExecDoW;
+        nextExec = QDateTime::currentDateTime().addDays(daysInFuture);
+        nextExec.setTime(Date_Time.time());
+
+        saveExecTimeToDb(nextExec);
+    }
+}
+
+void TimerData::saveExecTimeToDb(QDateTime nextExecTime)
+{
+        Exec_Date_Time = nextExecTime;
+        saveToDb();
+        LOG_Tea(LOG_INFO, QString("Sheduled next execution of timer(id=%1,reoccurrence=%2)  to '%3'").arg(Id).arg(Reoccurrence).arg(Exec_Date_Time.toString()));
 }
 
 void TimerData::exec(void)
@@ -378,6 +440,8 @@ void TimerData::execAsync(void)
     m_pd->Create();
 
     QFuture<void> f = QtConcurrent::run(this, &TimerData::exec);
+
+    setNextExecutionTime();
 }
 
 bool TimerData::saveToDb(void)

@@ -241,7 +241,6 @@ int mythplugin_run(void)
 
 int mythplugin_config(void)
 {
-    
     return 0;
 }
 
