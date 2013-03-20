@@ -304,9 +304,24 @@ void TimerData::setNextExecutionTime(void)
 
 void TimerData::saveExecTimeToDb(QDateTime nextExecTime)
 {
-        Exec_Date_Time = nextExecTime;
-        saveToDb();
-        LOG_Tea(LOG_INFO, QString("Sheduled next execution of timer(id=%1,reoccurrence=%2)  to '%3'").arg(Id).arg(Reoccurrence).arg(Exec_Date_Time.toString()));
+    Exec_Date_Time = nextExecTime;
+
+    MSqlQuery query(MSqlQuery::InitCon());
+    query.prepare( "UPDATE `teatime` SET `exec_date_time` = :EXECT "
+                    "WHERE `id` =:ID ");
+    query.bindValue(":ID", Id);
+    query.bindValue(":EXECT", Exec_Date_Time);
+
+    if(!query.exec())
+    {
+        QString msg = QString("Could not store new execution time. %1")
+                        .arg(query.lastError().text());
+        LOG_Tea(LOG_WARNING, msg);
+        return;
+    }
+
+    LOG_Tea(LOG_INFO, QString("Sheduled next execution of timer(id=%1,reoccurrence=%2)  to '%3'")
+                                .arg(Id).arg(Reoccurrence).arg(Exec_Date_Time.toString()));
 }
 
 void TimerData::exec(void)
@@ -532,6 +547,8 @@ bool TimerData::saveToDb(void)
 
 void TimerData::calcAndSaveExecTime(void)
 {
+    // todo: this should go into the setNextExecutionTime time methode
+    // set the Reoccurrence
     QDateTime exec_time;
     if (FixedTime)
     {
