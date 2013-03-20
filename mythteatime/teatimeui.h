@@ -20,14 +20,14 @@
  * @brief Screen to display all timers defined in the database
  *
  **/
-class TeaTime : public MythScreenType 
+class TeaTime : public MythScreenType
 {
     Q_OBJECT
-    
+
     public:
         TeaTime(MythScreenStack *parent);
         bool Create(void);
-        
+
     public slots:
         void newClicked(void);
         void itemClicked(MythUIButtonListItem *);
