@@ -456,7 +456,7 @@ void EditTimer::onReoccurrenceClicked(void)
     }
 
     SelectReoccurrence *sel = new SelectReoccurrence(st, m_Data.Reoccurrence);
-    if (!sel->Create())
+    if (!sel->create())
     {
         LOG_Tea(LOG_WARNING, QString("Could not create select reoccurrence popup."));
         return ;
