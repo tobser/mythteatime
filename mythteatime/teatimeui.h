@@ -26,12 +26,12 @@ class TeaTime : public MythScreenType
 
     public:
         TeaTime(MythScreenStack *parent);
-        bool Create(void);
+        bool create(void);
 
     public slots:
         void newClicked(void);
         void itemClicked(MythUIButtonListItem *);
-        void onEditCompleted(bool close);
+        void onEditCompleted();
 
     private slots:
         void refreshCountdown(void);

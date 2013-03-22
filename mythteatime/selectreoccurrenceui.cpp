@@ -12,7 +12,7 @@ SelectReoccurrence::SelectReoccurrence (MythScreenStack *parent, QString selecti
     m_Selection=selection;
 }
 
-bool SelectReoccurrence::Create(void)
+bool SelectReoccurrence::create(void)
 {
     // Load the theme for this screen
     if (!LoadWindowFromXML("teatime-ui.xml", "select_reoccurrence", this))
@@ -25,7 +25,6 @@ bool SelectReoccurrence::Create(void)
     bool err = false;
     UIUtilE::Assign(this, m_OkButton, "ok", &err);
     UIUtilE::Assign(this, m_ReoccList, "list", &err);
-
     if (err)
     {
         LOG_Tea(LOG_WARNING, "Theme is missing required elements.");
@@ -63,14 +62,14 @@ void SelectReoccurrence::onItemClicked(MythUIButtonListItem *item)
         if (cs ==MythUIButtonListItem::FullChecked)
             return;
 
-        SetAllItemsCheckState( MythUIButtonListItem::NotChecked);
+        setAllItemsCheckState(MythUIButtonListItem::NotChecked);
     }
     else if (id == "daily")
     {
         if (cs == MythUIButtonListItem::FullChecked)
-            SetAllItemsCheckState( MythUIButtonListItem::NotChecked);
+            setAllItemsCheckState(MythUIButtonListItem::NotChecked);
         else
-            SetAllItemsCheckState( MythUIButtonListItem::FullChecked);
+            setAllItemsCheckState(MythUIButtonListItem::FullChecked);
 
         m_ReoccList->GetItemByData("one_shot")->setChecked(MythUIButtonListItem::NotChecked);
     }
@@ -82,13 +81,13 @@ void SelectReoccurrence::onItemClicked(MythUIButtonListItem *item)
     if (id != "one_shot" && id != "daily")
     {
         m_ReoccList->GetItemByData("one_shot")->setChecked(MythUIButtonListItem::NotChecked);
-        if (AllDaysChecked())
+        if (allDaysChecked())
             m_ReoccList->GetItemByData("daily")->setChecked(MythUIButtonListItem::FullChecked);
         else
             m_ReoccList->GetItemByData("daily")->setChecked(MythUIButtonListItem::NotChecked);
     }
 }
-void SelectReoccurrence::SetAllItemsCheckState(const MythUIButtonListItem::CheckState cs)
+void SelectReoccurrence::setAllItemsCheckState(const MythUIButtonListItem::CheckState cs)
 {
     int cnt = m_ReoccList->GetCount();
     for (int i = 0; i < cnt ; i++)
@@ -98,7 +97,7 @@ void SelectReoccurrence::SetAllItemsCheckState(const MythUIButtonListItem::Check
     }
 }
 
-bool SelectReoccurrence::AllDaysChecked()
+bool SelectReoccurrence::allDaysChecked()
 {
     int cnt = m_ReoccList->GetCount();
     for (int i = 0; i < cnt ; i++)
@@ -118,9 +117,9 @@ void SelectReoccurrence::addButton(const QString text, const QString id)
     if (m_Selection.contains(id))
         cs = MythUIButtonListItem::FullChecked;
 
-     MythUIButtonListItem *button = new MythUIButtonListItem(m_ReoccList, text,"",true, cs);
-     button->SetText(text,"text");
-     button->SetData(QVariant(id));
+    MythUIButtonListItem *button = new MythUIButtonListItem(m_ReoccList, text,"",true, cs);
+    button->SetText(text,"text");
+    button->SetData(QVariant(id));
 }
 void SelectReoccurrence::onOkClicked(void)
 {
@@ -145,7 +144,6 @@ void SelectReoccurrence::onOkClicked(void)
         }
     }
     LOG_Tea(LOG_INFO, "Selected reoccurrence: " + selection);
-    emit SelectionCompleted(selection);
+    emit selectionCompleted(selection);
     Close();
 }
-

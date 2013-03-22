@@ -18,19 +18,18 @@
  * @brief Editor screen to alter a timer or create a new one
  *
  **/
-class EditTimer : public MythScreenType 
+class EditTimer : public MythScreenType
 {
     Q_OBJECT
-    
+
     public:
         EditTimer(MythScreenStack *parent, TimerData *timer);
-        bool Create(void);
+        bool create(void);
         void customEvent(QEvent *event);
-        
+
     protected slots:
         void onDeleteClicked(void);
-        void onSaveClicked(void);
-        void onSaveAndStartClicked(void);
+        void onOkClicked(void);
         void onAddActionClicked(void);
         void onActionItemClicked(MythUIButtonListItem *);
         void onEditCompleted(bool close);
@@ -45,18 +44,19 @@ class EditTimer : public MythScreenType
         void onReoccurrenceSelctionComplete(const QString selection);
 
     signals:
-        void editComplete(bool close);
-
+        void editComplete(void);
 
     private:
         bool updateLocalDataFromUi(QString &err);
         void buildActionButtonList(void);
         void moveAction(bool up);
-        void editCustomCmd(QString); 
+        void editCustomCmd(QString);
+        void enableNoneTimespanUi(void);
+        void enableTimespanUi(void);
+        bool hasSysevents(void);
         MythDialogBox* createDialog(const QString title);
 
-        MythUIButton     *m_SaveButton;
-        MythUIButton     *m_SaveAndStartButton;
+        MythUIButton     *m_OkButton;
         MythUIButton     *m_DeleteButton;
         MythUIButton     *m_CancelButton;
         MythUIButton     *m_AddActionButton;
@@ -71,7 +71,4 @@ class EditTimer : public MythScreenType
 
         TimerData        m_Data;
 };
-
-
-
 #endif

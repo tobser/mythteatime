@@ -279,14 +279,9 @@
             <align>allcenter</align>
         </textarea>
 
-        <button name="save" from="basebutton">
+        <button name="ok" from="basebutton">
             <area>300,100%-50,160,40</area>
-            <value>Save</value>
-        </button>
-
-        <button name="save_and_start" from="basebutton">
-            <area>490,100%-50,160,40</area>
-            <value>Start</value>
+            <value>OK</value>
         </button>
 
         <button name="delete" from="basebutton">

@@ -6,11 +6,9 @@
 #include <mythlogging.h>
 #include <dbutil.h>
 
-
-TeaTimeData::TeaTimeData()
-    : m_Timer(NULL)
+TeaTimeData::TeaTimeData():
+    m_Timer(NULL)
 {
-
 }
 
 /**

@@ -12,7 +12,6 @@
 #include <QEvent>
 #include <QMap>
 
-
 /**
  * @brief holds the list of timers
  *
@@ -28,6 +27,7 @@ class TeaTimeData :public QObject
         bool initialize(void);
         void shutdown(void);
         void reInit(void);
+
         QMap<int, TimerData *> m_Timers;
         QList<TimerData *> m_ActiveTimers;
 
@@ -37,6 +37,7 @@ class TeaTimeData :public QObject
     private:
         void stopTimer(void);
         void startTimer(void);
+
         QTimer  * m_Timer;
 };
 

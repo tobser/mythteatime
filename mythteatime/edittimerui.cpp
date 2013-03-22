@@ -5,8 +5,7 @@
 
 EditTimer::EditTimer(MythScreenStack *parent, TimerData * timer):
     MythScreenType(parent, "edit_teatimer"),
-    m_SaveButton(NULL),
-    m_SaveAndStartButton(NULL),
+    m_OkButton(NULL),
     m_DeleteButton(NULL),
     m_CancelButton(NULL),
     m_AddActionButton(NULL),
@@ -22,7 +21,7 @@ EditTimer::EditTimer(MythScreenStack *parent, TimerData * timer):
 {
 }
 
-bool EditTimer::Create(void)
+bool EditTimer::create(void)
 {
     // Load the theme for this screen
     if (!LoadWindowFromXML("teatime-ui.xml", "edit_teatimer", this))
@@ -42,18 +41,14 @@ bool EditTimer::Create(void)
 
     UIUtilW::Assign(this, m_InfoText, "infotext");
     if (m_InfoText)
-        m_InfoText->SetText(tr("\"Save\" stores the timer and returns to the"
-                               " previous screen. "
-                               "\"Start\" activates and stores the "
-                               "timer. "
-                               "\"Delete\" removes the timer. "
-                               "\"Cancel\" discards all changes and goes back"
-                               " to the previos screen."));
+        m_InfoText->SetText(tr("\"OK\" saves and starts the timer. "
+                    "\"Delete\" removes the timer. "
+                    "\"Cancel\" discards all changes and goes back"
+                    " to the previos screen."));
 
     // assign required elements
     bool err = false;
-    UIUtilE::Assign(this, m_SaveButton, "save", &err);
-    UIUtilE::Assign(this, m_SaveAndStartButton, "save_and_start", &err);
+    UIUtilE::Assign(this, m_OkButton, "ok", &err);
     UIUtilE::Assign(this, m_DeleteButton, "delete", &err);
     UIUtilE::Assign(this, m_AddActionButton, "add_action", &err);
     UIUtilE::Assign(this, m_MessageTextEdit, "message", &err);
@@ -62,20 +57,33 @@ bool EditTimer::Create(void)
     UIUtilE::Assign(this, m_TimeEdit, "time", &err);
     UIUtilE::Assign(this, m_Actions, "action_list", &err);
     UIUtilE::Assign(this, m_ReoccurrenceButton, "reoccurrence", &err);
-
     if (err)
     {
         LOG_Tea(LOG_WARNING, "Theme is missing required elements.");
         return  false;
     }
 
+    m_TimeSpinbox->SetRange(0, 1439, 1, 5);
+    enableTimespanUi();
+
+    if (m_Data.Id >= 0)
+    {
+        // set values from db
+        m_MessageTextEdit->SetText(m_Data.Message_Text);
+        m_TimeEdit->SetText(m_Data.Date_Time.toString());
+        m_TimeSpinbox->SetValue(m_Data.getTimespanMinutes());
+
+        if (!m_Data.Reoccurrence.startsWith("time_span"))
+        {
+            m_FixedTimeCb->SetCheckState( MythUIStateType::Full);
+            enableNoneTimespanUi();
+        }
+    }
 
     connect(m_Actions, SIGNAL(itemClicked(MythUIButtonListItem *)),
             this, SLOT(onActionItemClicked(MythUIButtonListItem *)));
-    connect(m_SaveButton, SIGNAL(Clicked()),
-            this, SLOT(onSaveClicked()),Qt::QueuedConnection);
-    connect(m_SaveAndStartButton, SIGNAL(Clicked()),
-            this,  SLOT(onSaveAndStartClicked()));
+    connect(m_OkButton, SIGNAL(Clicked()),
+            this,  SLOT(onOkClicked()));
     connect(m_DeleteButton, SIGNAL(Clicked()),
             this, SLOT(onDeleteClicked()));
     connect(m_AddActionButton, SIGNAL(Clicked()),
@@ -85,43 +93,6 @@ bool EditTimer::Create(void)
     connect(m_ReoccurrenceButton, SIGNAL(Clicked()),
             this, SLOT(onReoccurrenceClicked()));
 
-
-    m_FixedTimeCb->SetCheckState(false);
-    m_TimeEdit->SetEnabled(false);
-    m_TimeSpinbox->SetRange(0, 600, 1, 5);
-    m_TimeSpinbox->SetValue(5);
-    m_TimeSpinbox->SetVisible(true);
-
-    if (m_Data.Id >= 0)
-    {
-        m_MessageTextEdit->SetText(m_Data.Message_Text);
-
-        if (m_Data.Time_Span.isValid())
-        {
-            int mins = m_Data.Time_Span.hour() * 60;
-            mins += m_Data.Time_Span.minute();
-            m_TimeSpinbox->SetValue(mins);
-            m_TimeEdit->Hide();
-        }
-        else
-        {
-            m_FixedTimeCb->SetCheckState(true);
-
-            m_TimeSpinbox->SetEnabled(false);
-            m_TimeSpinbox->Hide();
-
-            m_TimeEdit->SetEnabled(true);
-            m_TimeEdit->SetText(m_Data.Date_Time.toString());
-
-            m_ReoccurrenceButton->SetEnabled(true);
-            m_ReoccurrenceButton->Show();
-        }
-
-        // set the correct button text:
-        onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
-    }
-
-
     buildActionButtonList();
 
     BuildFocusList();
@@ -129,35 +100,73 @@ bool EditTimer::Create(void)
     if (m_Data.Id < 0)
         SetFocusWidget(m_MessageTextEdit);
     else
-        SetFocusWidget(m_SaveAndStartButton);
+        SetFocusWidget(m_OkButton);
 
     LOG_Tea(LOG_INFO, QString("Editor for %1 created.")
-                        .arg(m_Data.toString()));
+            .arg(m_Data.toString()));
 
     return true;
+}
+
+void EditTimer::enableTimespanUi(void)
+{
+    m_TimeEdit->SetVisible(false);
+    m_TimeEdit->SetEnabled(false);
+
+    m_ReoccurrenceButton->SetEnabled(false);
+    m_ReoccurrenceButton->Hide();
+
+    m_TimeSpinbox->SetEnabled(true);
+    m_TimeSpinbox->SetVisible(true);
+    m_TimeSpinbox->SetValue(m_Data.getTimespanMinutes());
+    m_TimeSpinbox->Show();
+
+    SetRedraw();
+
+}
+void EditTimer::enableNoneTimespanUi(void)
+{
+
+    m_TimeSpinbox->SetEnabled(false);
+    m_TimeSpinbox->Hide();
+
+    m_TimeEdit->SetText(m_Data.Date_Time.toString());
+    m_TimeEdit->SetEnabled(true);
+    m_TimeEdit->SetVisible(true);
+
+    m_ReoccurrenceButton->SetEnabled(true);
+    m_ReoccurrenceButton->Show();
+
+    // set the correct button text:
+    if (m_Data.Reoccurrence.startsWith("time_span"))
+        m_Data.Reoccurrence = "one_shot";
+
+    onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
+
+    SetRedraw();
 }
 
 void EditTimer::buildActionButtonList(void)
 {
     m_Actions->Reset();
     if (m_Data.Exec_Actions.count() == 0)
-	{
+    {
         m_Actions->SetEnabled(false);
         return;
-	}
+    }
 
     m_Actions->SetEnabled(true);
 
     for (int i=0; i < m_Data.Exec_Actions.count(); i++)
     {
-       TeaAction t = m_Data.Exec_Actions[i];
-       MythUIButtonListItem *item = new MythUIButtonListItem(m_Actions, "");
-       item->SetData(i);
-       InfoMap map;
-       map["action_type"] = t.Action_Type;
-       map["action"] = t.Action_Data;
-       map["order_number"] = QString("%1").arg(i+1);
-       item->SetTextFromMap(map);
+        TeaAction t = m_Data.Exec_Actions[i];
+        MythUIButtonListItem *item = new MythUIButtonListItem(m_Actions, "");
+        item->SetData(i);
+        InfoMap map;
+        map["action_type"] = t.Action_Type;
+        map["action"] = t.Action_Data;
+        map["order_number"] = QString("%1").arg(i+1);
+        item->SetTextFromMap(map);
     }
     m_Actions->SetRedraw();
 }
@@ -168,13 +177,13 @@ void EditTimer::onDeleteClicked(void)
     {
         m_Data.removeFromDb();
     }
-    emit editComplete(false);
+    emit editComplete();
     Close();
 }
 
-void EditTimer::onSaveClicked(void)
+void EditTimer::onOkClicked(void)
 {
-    LOG_Tea(LOG_INFO, "Save");
+    LOG_Tea(LOG_INFO, "Ok");
 
     QString err;
     if (!updateLocalDataFromUi(err))
@@ -183,9 +192,9 @@ void EditTimer::onSaveClicked(void)
         return;
     }
 
-    m_Data.saveToDb();
+    m_Data.saveToDb(true);
 
-    emit editComplete(false);
+    emit editComplete();
     Close();
 }
 
@@ -197,6 +206,9 @@ void EditTimer::customEvent(QEvent *event)
 
         TeaAction ta;
         ta.Action_Data = dce->GetData().toString();
+        if (ta.Action_Data == "0")
+            return;
+
         if (dce->GetId() == "ADD_JUMPPOINT")
         {
             LOG_Tea(LOG_INFO, ta.Action_Data);
@@ -226,33 +238,26 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
     // wrong with his input (e.g. broken date..)
     //
     m_Data.Message_Text = m_MessageTextEdit->GetText();
-    m_Data.FixedTime  = m_FixedTimeCb->GetBooleanCheckState();
 
-    QString numberStr;
-    numberStr.sprintf("%02d", m_TimeSpinbox->GetValue().toInt() );
-
-    m_Data.setTimeSpanFromSecs(numberStr.toInt() * 60);
-    m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
+    if (m_FixedTimeCb->GetCheckState() == MythUIStateType::Off)
+    {
+        // set timespan:
+        int min = m_TimeSpinbox->GetValue().toInt();
+        m_Data.setTimeSpanFromSecs(min * 60);
+        if (min == 0)
+            m_Data.Reoccurrence = "time_span";
+        else
+            m_Data.Reoccurrence = "time_span_active";
+    }
+    else
+    {
+        // set date
+        m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
+    }
 
     return true;
 }
 
-void EditTimer::onSaveAndStartClicked(void)
-{
-    LOG_Tea(LOG_INFO, "Save and Run");
-    QString err;
-    if (!updateLocalDataFromUi(err))
-    {
-        LOG_Tea(LOG_WARNING, err);
-        return;
-    }
-
-    m_Data.saveToDb();
-    m_Data.calcAndSaveExecTime();
-
-    emit editComplete(true);
-    Close();
-}
 
 void EditTimer::onAddActionClicked(void)
 {
@@ -262,8 +267,28 @@ void EditTimer::onAddActionClicked(void)
 
     dialog->SetReturnEvent(this, "ADD_ACTION");
     dialog->AddButton(tr("Add Jumppoint"), SLOT(jumppointMenu()), true);
-    dialog->AddButton(tr("Add Systemevent"), SLOT(syseventMenu()), true);
     dialog->AddButton(tr("Custom Command"), SLOT(newCustomCmd()));
+    if (hasSysevents())
+        dialog->AddButton(tr("Add Systemevent"), SLOT(syseventMenu()), true);
+}
+
+bool EditTimer::hasSysevents(void)
+{
+    MSqlQuery q(MSqlQuery::InitCon());
+    q.prepare("SELECT count(*) FROM `settings` "
+            " WHERE `hostname` = :HOST AND `value` LIKE 'EventCmdKey%'");
+    q.bindValue(":HOST",  gCoreContext->GetHostName());
+
+    if (!q.exec())
+    {
+        LOG_Tea(LOG_WARNING, "Could not read sysevent count from DB.");
+        return false;
+    }
+
+    if (!q.next())
+        return false;
+
+    return (q.value(0).toInt() > 0);
 }
 
 void EditTimer::newCustomCmd()
@@ -276,14 +301,14 @@ void EditTimer::editCustomCmd(QString cmd)
     if (!st)
     {
         LOG_Tea(LOG_WARNING, QString("Could not get \"popup stack\" to "
-                                     "display cmd inputbox."));
+                    "display cmd inputbox."));
         return;
     }
     MythTextInputDialog *d = new MythTextInputDialog(st,
-                                    tr("Create Custom Command"),
-                                    FilterNone,
-                                    false,
-                                    cmd);
+            tr("Create Custom Command"),
+            FilterNone,
+            false,
+            cmd);
     if (!d->Create())
     {
         LOG_Tea(LOG_WARNING, "Could not create cmd inputbox.");
@@ -313,10 +338,9 @@ void EditTimer::jumppointMenu(void)
 }
 void EditTimer::syseventMenu(void)
 {
-
     MSqlQuery q(MSqlQuery::InitCon());
     q.prepare("SELECT value,data FROM `settings` "
-              " WHERE `hostname` = :HOST AND `value` LIKE 'EventCmdKey%'");
+            " WHERE `hostname` = :HOST AND `value` LIKE 'EventCmdKey%'");
     q.bindValue(":HOST",  gCoreContext->GetHostName());
 
     if (!q.exec())
@@ -331,8 +355,8 @@ void EditTimer::syseventMenu(void)
 
     dialog->SetReturnEvent(this, "ADD_SYSEVENT");
 
-	while (q.next())
-	{
+    while (q.next())
+    {
         QString ev = q.value(0).toString();
         QString cmd = q.value(1).toString();
         QString val = QString("%1 (%2)").arg(ev).arg(cmd);
@@ -364,7 +388,7 @@ MythDialogBox* EditTimer::createDialog(const QString title)
     if (!st)
     {
         LOG_Tea(LOG_WARNING, QString("Could not get \"popup stack\" to "
-                                     "display \"%1\" dialogbox.").arg(title));
+                    "display \"%1\" dialogbox.").arg(title));
         return NULL;
     }
     MythDialogBox *dialog = new MythDialogBox(title, st, "menu");
@@ -373,7 +397,7 @@ MythDialogBox* EditTimer::createDialog(const QString title)
     {
         delete dialog;
         LOG_Tea(LOG_WARNING, QString("Could not create dialogbox \"%1\".")
-                                    .arg(title));
+                .arg(title));
         return NULL;
     }
 
@@ -383,62 +407,43 @@ MythDialogBox* EditTimer::createDialog(const QString title)
 
 void EditTimer::onRemoveAction(void)
 {
-     MythUIButtonListItem *item = m_Actions->GetItemCurrent();
-     if (!item)
-         return;
+    MythUIButtonListItem *item = m_Actions->GetItemCurrent();
+    if (!item)
+        return;
 
-     int index = item->GetData().toInt();
-     m_Data.Exec_Actions.removeAt(index);
-     buildActionButtonList();
+    int index = item->GetData().toInt();
+    m_Data.Exec_Actions.removeAt(index);
+    buildActionButtonList();
 }
 
 void EditTimer::moveAction(bool up)
 {
-     MythUIButtonListItem *item = m_Actions->GetItemCurrent();
-     if (!item)
-         return;
+    MythUIButtonListItem *item = m_Actions->GetItemCurrent();
+    if (!item)
+        return;
 
-     int index = item->GetData().toInt();
-     int newIdx = (up ? (index -1) : (index + 1));
+    int index = item->GetData().toInt();
+    int newIdx = (up ? (index -1) : (index + 1));
 
-     int listSize = m_Data.Exec_Actions.count();
-     TeaAction t = m_Data.Exec_Actions[index];
-     m_Data.Exec_Actions.removeAt(index);
-     if (newIdx < 0)
-         m_Data.Exec_Actions << t; // was first, shall be last:
-	 else if (newIdx >= listSize)
-         m_Data.Exec_Actions.insert(0,t); // was last, becomes first
-	 else
-         m_Data.Exec_Actions.insert(newIdx,t);
+    int listSize = m_Data.Exec_Actions.count();
+    TeaAction t = m_Data.Exec_Actions[index];
+    m_Data.Exec_Actions.removeAt(index);
+    if (newIdx < 0)
+        m_Data.Exec_Actions << t; // was first, shall be last:
+    else if (newIdx >= listSize)
+        m_Data.Exec_Actions.insert(0,t); // was last, becomes first
+    else
+        m_Data.Exec_Actions.insert(newIdx,t);
 
-     buildActionButtonList();
+    buildActionButtonList();
 }
 
 void EditTimer::fixedTimeCbToggled(bool checked)
 {
     if (checked)
-    {
-        m_TimeSpinbox->SetEnabled(false);
-        m_TimeSpinbox->Hide();
-        m_TimeEdit->SetEnabled(true);
-        m_TimeEdit->Show();
-        m_ReoccurrenceButton->SetEnabled(true);
-        m_ReoccurrenceButton->Show();
-        if (m_TimeEdit->GetText().isEmpty())
-        {
-            QDateTime t = QDateTime::currentDateTime();
-            m_TimeEdit->SetText(t.toString());
-        }
-    }
+        enableNoneTimespanUi();
     else
-    {
-        m_TimeEdit->SetEnabled(false);
-        m_TimeEdit->Hide();
-        m_ReoccurrenceButton->SetEnabled(false);
-        m_ReoccurrenceButton->Hide();
-        m_TimeSpinbox->SetEnabled(true);
-        m_TimeSpinbox->Show();
-    }
+        enableTimespanUi();
 }
 
 void EditTimer::onReoccurrenceClicked(void)
@@ -457,7 +462,7 @@ void EditTimer::onReoccurrenceClicked(void)
         return ;
     }
     connect(sel, SIGNAL(SelectionCompleted(QString)),
-                this, SLOT(onReoccurrenceSelctionComplete(QString)));
+            this, SLOT(onReoccurrenceSelctionComplete(QString)));
 
     st->AddScreen(sel);
 }

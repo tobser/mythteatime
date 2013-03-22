@@ -3,17 +3,16 @@
 
 #include <teatimeui.h>
 
-
 class SelectReoccurrence : public MythScreenType 
 {
     Q_OBJECT
 
     public:
         SelectReoccurrence(MythScreenStack *parent, QString reoccurrence);
-        bool Create(void);
+        bool create(void);
 
     signals:
-        void SelectionCompleted(const QString selection);
+        void selectionCompleted(const QString selection);
 
     private slots:
             void onItemClicked(MythUIButtonListItem *item);
@@ -21,8 +20,9 @@ class SelectReoccurrence : public MythScreenType
 
     private:
         void addButton(const QString text, const QString id);
-        void SetAllItemsCheckState(const MythUIButtonListItem::CheckState cs);
-        bool AllDaysChecked();
+        void setAllItemsCheckState(const MythUIButtonListItem::CheckState cs);
+        bool allDaysChecked();
+
         MythUIButtonList *m_ReoccList;
         MythUIButton     *m_OkButton;
         QString          m_Selection;

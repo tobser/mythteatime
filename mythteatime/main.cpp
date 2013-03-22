@@ -51,8 +51,8 @@ static bool CreateTable(MSqlQuery query)
 
     if (!success)
     {
-        LOG_Tea(LOG_WARNING, "Could not create initial teatime table");
-        LOG_Tea(LOG_WARNING, query.lastError().text());
+        LOG_Tea(LOG_WARNING, QString("Could not create initial teatime table: %1")
+                                    .arg(query.lastError().text()));
         return false;
     }
 
@@ -68,8 +68,8 @@ static bool CreateTable(MSqlQuery query)
             );
     if (!success)
     {
-        LOG_Tea(LOG_WARNING, "Could not create initial teatime_rundata");
-        LOG_Tea(LOG_WARNING, query.lastError().text());
+        LOG_Tea(LOG_WARNING, QString("Could not create initial teatime_rundata: %1")
+                                    .arg(query.lastError().text()));
         return false;
     }
 
@@ -80,7 +80,12 @@ static bool CreateTable(MSqlQuery query)
             "   ( 'Tea is ready!', '00:05:00', 'yes', '%1')")
                     .arg(gCoreContext->GetHostName());
 
-    query.exec(q);
+    if (!query.exec(q))
+    {
+        LOG_Tea(LOG_WARNING, QString("Could not create sample data: %1")
+                                    .arg(query.lastError().text()));
+        return false;
+    }
 
     LOG_Tea(LOG_INFO, "Creating initial database tables completed successfully.");
     return true;
@@ -92,26 +97,25 @@ static bool UpdateTableV1(MSqlQuery query)
     bool success = query.exec("ALTER TABLE `mythconverg`.`teatime` DROP `pause_playback`");
     if (!success)
     {
-        LOG_Tea(LOG_WARNING, "upgade to table verison 2 failed.");
-        LOG_Tea(LOG_WARNING, query.lastError().text());
+        LOG_Tea(LOG_WARNING, QString("upgade to table verison 2 failed: %1")
+                             .arg(query.lastError().text()));
         return false;
     }
 
     gCoreContext->SaveSettingOnHost("TeatimeDBSchemaVer", "2", NULL);
     LOG_Tea(LOG_INFO, "upgading database tables to version 2 successfully completed.");
     return true;
-
 }
 
 static bool UpdateTableV2(MSqlQuery query)
 {
     LOG_Tea(LOG_INFO, "upgading database tables to version 3.");
-    // remove paus playback setting, we try allways to do it now
+    // remove pause playback setting, we try allways to do it now
     bool success = query.exec("ALTER TABLE `mythconverg`.`teatime` ADD `reoccurrence` VARCHAR(16) DEFAULT 'one_shot' ");
     if (!success)
     {
-        LOG_Tea(LOG_WARNING, "upgade to table verison 3 failed.");
-        LOG_Tea(LOG_WARNING, query.lastError().text());
+        LOG_Tea(LOG_WARNING, QString("upgade to table verison 3 failed: %1")
+                             .arg(query.lastError().text()));
         return false;
     }
 
@@ -201,7 +205,7 @@ static void openTimerScreen(void)
         return;
 
     TeaTime* teatime = new TeaTime(st);
-    if (!teatime->Create())
+    if (!teatime->create())
     {
         LOG_Tea(LOG_WARNING, "Could not create Teatime UI.");
         delete teatime;
@@ -252,5 +256,4 @@ void mythplugin_destroy(void)
         delete gTeaData;
         gTeaData = NULL;
     }
-    LOG_Tea(LOG_INFO, "Teatime plugin destroyed.");
 }

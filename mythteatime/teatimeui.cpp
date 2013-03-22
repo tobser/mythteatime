@@ -25,14 +25,11 @@ TeaTime::TeaTime(MythScreenStack *parent):
 {
 }
 
-bool TeaTime::Create(void)
+bool TeaTime::create(void)
 {
-
-    bool foundtheme = false;
-
     // Load the theme for this screen
+    bool foundtheme = false;
     foundtheme = LoadWindowFromXML("teatime-ui.xml", "teatime", this);
-    
     if (!foundtheme)
     {
         LOG_Tea(LOG_WARNING, "window teatime in teatime-ui.xml is missing."); 
@@ -46,7 +43,7 @@ bool TeaTime::Create(void)
     UIUtilW::Assign(this, m_InfoText, "infotext");
     if (m_InfoText)
         m_InfoText->SetText(tr("Select a timer to start or edit. To create"
-                            " a new timer press the \"New\" button."));
+                    " a new timer press the \"New\" button."));
 
     UIUtilW::Assign(this, m_TitleText, "title");
     if (m_TitleText)
@@ -55,7 +52,6 @@ bool TeaTime::Create(void)
     bool err = false;
     UIUtilE::Assign(this, m_ButtonList, "timer_list", &err);
     UIUtilE::Assign(this, m_NewButton, "new", &err);
-
     if (err)
     {
         LOG_Tea(LOG_WARNING, "Theme is missing required elements."); 
@@ -63,12 +59,13 @@ bool TeaTime::Create(void)
     }
 
     fillTimerList();
-    
+
     connect(m_ButtonList, SIGNAL(itemClicked(MythUIButtonListItem *)),
-                     this, SLOT(itemClicked(MythUIButtonListItem *)));
+            this, SLOT(itemClicked(MythUIButtonListItem *)));
     connect(m_NewButton,    SIGNAL(Clicked()), SLOT(newClicked()));
 
     BuildFocusList();
+
 
     m_Timer = new QTimer(this);
     m_Timer->setSingleShot(false);
@@ -80,22 +77,29 @@ bool TeaTime::Create(void)
 
 void TeaTime::refreshCountdown(void)
 {
-        MythUIButtonListItem* item;
-        TimerData val;
+    MythUIButtonListItem* item;
+    TimerData val;
 
-        int count =  m_ButtonList->GetCount();
+    int count =  m_ButtonList->GetCount();
+    for (int i = 0 ; i < count; i++)
+    {
+        item = m_ButtonList->GetItemAt(i);
+        val = qVariantValue<TimerData>(item->GetData());
 
-        for (int i = 0 ; i < count; i++){
-
-            item = m_ButtonList->GetItemAt(i);
-            val = qVariantValue<TimerData>(item->GetData());
-
-            updateBtnText(item, &val);
-        }
+        updateBtnText(item, &val);
+    }
 }
+
 void TeaTime::fillTimerList(void)
 {
     m_ButtonList->Reset();
+
+    if (gTeaData->m_Timers.count() == 0)
+    {
+        SetFocusWidget(m_NewButton);
+        return;
+    }
+
     QMapIterator<int,TimerData*> it(gTeaData->m_Timers);
     while(it.hasNext())
     {
@@ -112,9 +116,9 @@ void TeaTime::fillTimerList(void)
 
 void TeaTime::updateBtnText(MythUIButtonListItem* item, TimerData* timerData)
 {
-        InfoMap map;
-        timerData->toMap(map);
-        item->SetTextFromMap(map);
+    InfoMap map;
+    timerData->toMap(map);
+    item->SetTextFromMap(map);
 }
 
 void TeaTime::newClicked(void)
@@ -137,29 +141,27 @@ void TeaTime::openEditScreen(TimerData *td = NULL)
     }
 
     EditTimer *et = new EditTimer(popupStack, td);
-    if (!et->Create())
+    if (!et->create())
     {
         LOG_Tea(LOG_WARNING, "Could not create edit timer screen.");
         delete et;
         return;
     }
 
-    connect(et, SIGNAL(editComplete(bool)), this,
-                 SLOT(onEditCompleted(bool)),Qt::DirectConnection);
+    connect(et, SIGNAL(editComplete()), this,
+            SLOT(onEditCompleted()),Qt::DirectConnection);
 
     popupStack->AddScreen(et);
 }
 
-void TeaTime::onEditCompleted(bool close)
+void TeaTime::onEditCompleted()
 {
-    LOG_Tea(LOG_INFO, "Edit complete rebuilding ui.");
+    LOG_Tea(LOG_INFO, "Edit complete, reloading ui.");
     if (gTeaData)
     {
         gTeaData->reInit();
         fillTimerList();
     }
-    if (close)
-        Close();
 
     LOG_Tea(LOG_INFO, "rebuilding done.");
 }
