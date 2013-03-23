@@ -461,7 +461,7 @@ void EditTimer::onReoccurrenceClicked(void)
         LOG_Tea(LOG_WARNING, QString("Could not create select reoccurrence popup."));
         return ;
     }
-    connect(sel, SIGNAL(SelectionCompleted(QString)),
+    connect(sel, SIGNAL(selectionCompleted(QString)),
             this, SLOT(onReoccurrenceSelctionComplete(QString)));
 
     st->AddScreen(sel);
