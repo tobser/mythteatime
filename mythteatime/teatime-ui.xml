@@ -105,6 +105,43 @@
             <align>vcenter,right</align>
         </clock>
 
+        <textarea name="show_message_description">
+            <area>100,75,100%-100,30</area>
+            <align>vcenter</align>
+            <value>Show message when timer is executed.</value>
+        </textarea>
+
+        <checkbox name="show_message">
+            <area>50,75,30,30</area>
+            <statetype name="background">
+                <state name="active">
+                    <imagetype name="background">
+                        <filename>unchecked.png</filename>
+                    </imagetype>
+                </state>
+                <state name="selected">
+                    <imagetype name="background">
+                        <filename>checkbox_background_selected.png</filename>
+                    </imagetype>
+                </state>
+                <state name="disabled" />
+            </statetype>
+            <statetype name="checkstate">
+                <area>0,0,30,30</area>
+                <state type="off" />
+                <state type="half">
+                    <imagetype name="background">
+                        <filename>checked_selected.png</filename>
+                    </imagetype>
+                </state>
+                <state type="full">
+                    <imagetype name="mark">
+                        <filename>checked.png</filename>
+                    </imagetype>
+                </state>
+            </statetype>
+        </checkbox>
+
         <textedit name="message" from="basetextedit"  >
             <area>50,110,1180,80</area>
             <statetype name="background">

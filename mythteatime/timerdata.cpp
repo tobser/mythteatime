@@ -40,21 +40,23 @@ TimerData::TimerData(TimerData * td ):
     initJumpDest();
     if (td)
     {
-        Id=td->Id;
-        Message_Text = td->Message_Text;
+        Id             = td->Id;
+        Message_Text   = td->Message_Text;
         Exec_Date_Time = td->Exec_Date_Time;
-        Date_Time = td->Date_Time;
-        Time_Span = td->Time_Span;
-        Exec_Actions = td->Exec_Actions;
-        Reoccurrence = td->Reoccurrence;
+        Date_Time      = td->Date_Time;
+        Time_Span      = td->Time_Span;
+        Exec_Actions   = td->Exec_Actions;
+        Reoccurrence   = td->Reoccurrence;
+        ShowMessage    = td->ShowMessage;
     }
 }
 
 void TimerData::initDefaults()
 {
-    Date_Time = QDateTime::currentDateTime();
-    Time_Span = QTime(0,5,0);
+    Date_Time    = QDateTime::currentDateTime();
+    Time_Span    = QTime(0,5,0);
     Reoccurrence = "time_span";
+    ShowMessage  = true;
 }
 
 QString TimerData::toString(void)
@@ -217,11 +219,12 @@ bool TimerData::init(void)
 {
     MSqlQuery query(MSqlQuery::InitCon());
     query.prepare("SELECT "
-            " message_text,"      // 0
-            " exec_date_time, "   // 1
-            " date_time, "        // 2
-            " time_span, "        // 3
-            " reoccurrence "      // 4
+            " message_text,"    // 0
+            " exec_date_time, " // 1
+            " date_time, "      // 2
+            " time_span, "      // 3
+            " reoccurrence, "   // 4
+            " show_message "    // 5
             "from `teatime` WHERE id = :TID");
     query.bindValue(":TID", Id);
 
@@ -238,11 +241,12 @@ bool TimerData::init(void)
         return false;
     }
 
-    Message_Text = query.value(0).toString();
+    Message_Text   = query.value(0).toString();
     Exec_Date_Time = query.value(1).toDateTime();
-    Date_Time = query.value(2).toDateTime();
-    Time_Span = QTime::fromString(query.value(3).toString(), "hh:mm:ss");
-    Reoccurrence = query.value(4).toString();
+    Date_Time      = query.value(2).toDateTime();
+    Time_Span      = QTime::fromString(query.value(3).toString(), "hh:mm:ss");
+    Reoccurrence   = query.value(4).toString();
+    ShowMessage    = query.value(5).toBool();
 
     setNextExecutionTime();
 
@@ -388,22 +392,29 @@ void TimerData::exec(void)
     }
 
     int actionCnt = Exec_Actions.count();
-    int wait = 2;
-    QString popup_message = Message_Text;
-    if (actionCnt > 0)
-    {
-        QString info = QString("\n\n%1 actions will be run in %2s")
-                                .arg(actionCnt)
-                                .arg(wait);
-        popup_message.append(info);
-    }
 
-    LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
-    QStringList sl ;
-    sl << "pauseplayback"; // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
-    MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
-    QCoreApplication::instance()->postEvent(mainWin, me);
-    sleep(wait);
+    if (ShowMessage)
+    {
+        int wait = 2;
+        QString popup_message = Message_Text;
+        if (actionCnt > 0)
+        {
+            QString info = QString("\n\n%1 actions will be run in %2s")
+                                    .arg(actionCnt)
+                                    .arg(wait);
+            popup_message.append(info);
+        }
+
+        LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
+
+        // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
+        QStringList sl ;
+        sl << "pauseplayback"; 
+
+        MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
+        QCoreApplication::instance()->postEvent(mainWin, me);
+        sleep(wait);
+    }
 
     if (actionCnt == 0)
         return;
@@ -546,6 +557,7 @@ bool TimerData::saveToDb(bool startTimespanTimer)
             ", `date_time` = :DATETIME "
             ", `time_span` = :TIMESPAN "
             ", `reoccurrence` = :REOCC "
+            ", `show_message` = :SHOWMESS "
             "WHERE `id` =:ID ");
 
     if (Message_Text.isEmpty())
@@ -558,6 +570,7 @@ bool TimerData::saveToDb(bool startTimespanTimer)
     query.bindValue(":DATETIME", Date_Time);
     query.bindValue(":TIMESPAN", Time_Span);
     query.bindValue(":ID", Id);
+    query.bindValue(":SHOWMESS", (ShowMessage ? "1" : "0"));
 
     if(!query.exec())
     {

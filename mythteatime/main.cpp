@@ -26,7 +26,7 @@ static void setupKeys(void)
     REG_JUMPEX(QT_TRANSLATE_NOOP("MythControls", "Teatimer"),
             "Opens a dialog to setup a timer.", "" , openTimerScreen, false);
 
-    LOG_Tea(LOG_INFO, "Registered JumpPoint");
+    LOG_Tea(LOG_INFO, "Registered JumpPoint \"Teatimer\"");
 }
 
 static bool CreateTable(MSqlQuery query)
@@ -124,6 +124,22 @@ static bool UpdateTableV2(MSqlQuery query)
     return true;
 }
 
+static bool UpdateTableV3(MSqlQuery query)
+{
+    LOG_Tea(LOG_INFO, "upgading database tables to version 4.");
+    bool success = query.exec("ALTER TABLE `mythconverg`.`teatime` ADD `show_message` BOOLEAN DEFAULT '1' ");
+    if (!success)
+    {
+        LOG_Tea(LOG_WARNING, QString("upgade to table verison 4 failed: %1")
+                             .arg(query.lastError().text()));
+        return false;
+    }
+
+    gCoreContext->SaveSettingOnHost("TeatimeDBSchemaVer", "4", NULL);
+    LOG_Tea(LOG_INFO, "upgading database tables to version 4 successfully completed.");
+    return true;
+};
+
 static bool updateDb()
 {
     LOG_Tea(LOG_INFO, "Checking DB state.");
@@ -136,7 +152,7 @@ static bool updateDb()
 
     int dbVer =  gCoreContext->GetSetting("TeatimeDBSchemaVer", "0").toInt();
 
-    int currentDbVersion = 3;
+    int currentDbVersion = 4;
 
     if (dbVer > currentDbVersion )
     {
@@ -171,6 +187,14 @@ static bool updateDb()
         case 2:
             {
                 if (!UpdateTableV2(query))
+                {
+                    success = false;
+                    break;
+                }
+            }
+        case 3:
+            {
+                if (!UpdateTableV3(query))
                 {
                     success = false;
                     break;

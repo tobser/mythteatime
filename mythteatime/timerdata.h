@@ -34,6 +34,7 @@ Q_DECLARE_METATYPE(TeaAction)
             bool isReoccurring();
 
             int                     Id;
+            bool                    ShowMessage; 
             QString                 Message_Text;
             QDateTime               Exec_Date_Time;
             QDateTime               Date_Time;

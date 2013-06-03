@@ -16,6 +16,7 @@ EditTimer::EditTimer(MythScreenStack *parent, TimerData * timer):
     m_TimeEdit(NULL),
     m_MessageTextEdit(NULL),
     m_FixedTimeCb(NULL),
+    m_ShowMessageCb(NULL),
     m_Actions(NULL),
     m_Data(timer)
 {
@@ -31,6 +32,15 @@ bool EditTimer::create(void)
     }
 
     // assign optional elements
+    UIUtilW::Assign(this, m_ShowMessageCb, "show_message");
+    if (m_ShowMessageCb)
+    {
+        if (m_Data.ShowMessage)
+            m_ShowMessageCb->SetCheckState( MythUIStateType::Full);
+        else
+            m_ShowMessageCb->SetCheckState( MythUIStateType::Off);
+    }
+
     UIUtilW::Assign(this, m_CancelButton, "cancel");
     if (m_CancelButton)
         connect(m_CancelButton, SIGNAL(Clicked()), SLOT(Close()));
@@ -254,6 +264,11 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
         // set date
         m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
     }
+
+    if (!m_ShowMessageCb)
+        m_Data.ShowMessage = true;
+    else
+        m_Data.ShowMessage = (m_ShowMessageCb->GetCheckState() == MythUIStateType::Full);
 
     return true;
 }

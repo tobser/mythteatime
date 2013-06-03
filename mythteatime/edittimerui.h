@@ -67,6 +67,7 @@ class EditTimer : public MythScreenType
         MythUITextEdit   *m_TimeEdit;
         MythUITextEdit   *m_MessageTextEdit;
         MythUICheckBox   *m_FixedTimeCb;
+        MythUICheckBox   *m_ShowMessageCb;
         MythUIButtonList *m_Actions;
 
         TimerData        m_Data;
