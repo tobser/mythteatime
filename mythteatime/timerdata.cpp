@@ -473,12 +473,11 @@ void TimerData::runSysEvent(const QString & sysEventKey)
     LOG_Tea(LOG_INFO, QString("done."));
 }
 
-void TimerData::runCommand(const QString cmd)
+void TimerData::runCommand(const QString cmdStr)
 {
-    LOG_Tea(LOG_INFO, QString("running cmd '%1'").arg(cmd));
-    MythSystem s (cmd, (kMSStdIn|kMSStdOut|kMSStdErr));
-    s.Run();
-    s.Wait();
+    LOG_Tea(LOG_INFO, QString("running cmd '%1'").arg(cmdStr));
+    QScopedPointer<MythSystem>  cmd(MythSystem::Create(cmdStr, (kMSStdIn|kMSStdOut|kMSStdErr)));
+    cmd->Wait(0);
 }
 
 void TimerData::jumpToAndWaitArrival(const QString & target)
