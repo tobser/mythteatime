@@ -1,5 +1,6 @@
 #ifndef MYTH_TIMER_DATA_H
 #define MYTH_TIMER_DATA_H
+#include <stdint.h>
 
 #include <QString>
 #include <QVariant>
@@ -32,6 +33,7 @@ Q_DECLARE_METATYPE(TeaAction)
             void setTimeSpanFromSecs(int seconds);
             int getTimespanMinutes(void);
             bool isReoccurring();
+            void setNotificationId(uint32_t id);
 
             int                     Id;
             bool                    ShowMessage; 
@@ -42,6 +44,7 @@ Q_DECLARE_METATYPE(TeaAction)
             QList<TeaAction>        Exec_Actions;
             QMap <QString, QString> jumpDest;
             QString                 Reoccurrence;
+            uint32_t                m_NotificationId;
 
         private:
             void exec(void);
@@ -58,9 +61,7 @@ Q_DECLARE_METATYPE(TeaAction)
                 *m = (inSecs % (60 * 60)) / 60;
                 *s = inSecs % 60;
             };
-
-            MythScreenStack         *m_st ;
-            MythUIProgressDialog    *m_pd;
+            void postNotification(QString title, QString author, QString details, int  total, int  progress);
     };
 
 Q_DECLARE_METATYPE(TimerData)

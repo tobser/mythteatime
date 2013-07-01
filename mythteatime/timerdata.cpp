@@ -7,6 +7,8 @@
 #include <mythcontext.h>
 #include <mythevent.h>
 #include <mythsystem.h>
+#include <mythuinotificationcenter.h>
+//#include <mythuinotificationcenter.h>
 
 // qt
 #include <QtCore>
@@ -16,25 +18,19 @@
 #define tr(a) QObject::tr(a)
 
 TimerData::TimerData(int id):
-    Id(id),
-    m_st(NULL),
-    m_pd(NULL)
+    Id(id)
 {
     initDefaults();
     initJumpDest();
 }
 
 TimerData::TimerData():
-    Id(-2),
-    m_st(NULL),
-    m_pd(NULL)
+    Id(-2)
 {
 }
 
 TimerData::TimerData(TimerData * td ):
-    Id(-3),
-    m_st(NULL),
-    m_pd(NULL)
+    Id(-3)
 {
     initDefaults();
     initJumpDest();
@@ -215,6 +211,10 @@ bool TimerData::isActive(void)
     return (Exec_Date_Time >= QDateTime::currentDateTime());
 }
 
+void TimerData::setNotificationId(uint32_t id)
+{
+    m_NotificationId = id;
+}
 bool TimerData::init(void)
 {
     MSqlQuery query(MSqlQuery::InitCon());
@@ -393,42 +393,39 @@ void TimerData::exec(void)
 
     int actionCnt = Exec_Actions.count();
 
-    if (ShowMessage)
+    int wait = 2;
+    QString popup_message = Message_Text;
+    if (actionCnt > 0)
     {
-        int wait = 2;
-        QString popup_message = Message_Text;
-        if (actionCnt > 0)
-        {
-            QString info = QString("\n\n%1 actions will be run in %2s")
-                                    .arg(actionCnt)
-                                    .arg(wait);
-            popup_message.append(info);
-        }
-
-        LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
-
-        // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
-        QStringList sl ;
-        sl << "pauseplayback"; 
-
-        MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
-        QCoreApplication::instance()->postEvent(mainWin, me);
-        sleep(wait);
+        QString info = QString("\n\n%1 actions will be run in %2s")
+            .arg(actionCnt)
+            .arg(wait);
+        popup_message.append(info);
     }
+
+    LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
+    postNotification(Message_Text , popup_message, "" , actionCnt + 1 , 0); 
+
+    //    // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
+    //    QStringList sl ;
+    //    sl << "pauseplayback"; 
+
+    //    MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
+    //    QCoreApplication::instance()->postEvent(mainWin, me);
+    sleep(wait);
+
 
     if (actionCnt == 0)
         return;
 
     LOG_Tea(LOG_INFO, "Executing actions.");
 
-    m_pd->SetTotal(actionCnt);
-    m_st->AddScreen(m_pd);
-
     for (int i=0; i < actionCnt; i++)
     {
         TeaAction a = Exec_Actions[i];
-        m_pd->SetMessage(a.Action_Type +": " +a.Action_Data);
-        m_pd->SetProgress(i);
+
+        postNotification(a.Action_Data, a.Action_Type, QString("step %1").arg(i +1 ), actionCnt +1 , i +1 ); 
+        sleep(1);
 
         if (a.Action_Type == "JumpPoint")
         {
@@ -443,10 +440,30 @@ void TimerData::exec(void)
             runCommand(a.Action_Data);
         }
     }
+}
 
-    m_pd->Close();
-    m_pd = NULL;
-    m_st = NULL;
+void TimerData::postNotification(QString title, QString author, QString details, int  total, int  progress)
+{
+  //  MythNotification *n = new MythNotification(title, author, details);
+  //  n->SetId(m_NotificationId);
+  //  n->SetDuration(1);
+  //  MythUINotificationCenter::GetInstance()->Queue(*n); 
+    if (!ShowMessage)
+        return;
+
+    DMAP metadata;
+    metadata["minm"] = title;
+    metadata["asar"] = author;
+    metadata["asal"] = details;
+
+    MythNotification::Type t = (progress == 0 ? MythNotification::New : MythNotification::Update);
+
+    MythMediaNotification *n = new MythMediaNotification(t, NULL, metadata, total, (1 +progress));
+    n->SetId(m_NotificationId);
+    MythUINotificationCenter::GetInstance()->Queue(*n); 
+
+    delete n;
+
 }
 
 void TimerData::runSysEvent(const QString & sysEventKey)
@@ -508,18 +525,8 @@ void TimerData::jumpToAndWaitArrival(const QString & target)
 
 void TimerData::execAsync(void)
 {
-    m_st = GetMythMainWindow()->GetStack("popup stack");
-    if (!m_st)
-    {
-        LOG_Tea(LOG_WARNING, "Could not get \"popup stack\" to display "
-                "progressdialog.");
-        return;
-    }
-
     int actionCnt = Exec_Actions.count();
     QString msg = tr("Executing %1 timer acions").arg(actionCnt);
-    m_pd = new MythUIProgressDialog(msg, m_st, "exec_actions");
-    m_pd->Create();
 
     QFuture<void> f = QtConcurrent::run(this, &TimerData::exec);
 
