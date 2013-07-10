@@ -9,9 +9,8 @@ target.path = $${LIBDIR}/mythtv/plugins
 INSTALLS += target
 
 uifiles.path = $${PREFIX}/share/mythtv/themes/default
-uifiles.files = teatime-ui.xml
-installfiles.path = $${PREFIX}/share/mythtv
-installfiles.files = teatime-ui.xml
+uifiles.files = theme/teatime-ui.xml theme/alarm_clock.svg
+
 
 INSTALLS += uifiles
 
