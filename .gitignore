@@ -1,5 +1,6 @@
 *.o
 *.so
+core
 
 # Generated MOC, resource and UI files
 moc_*.cpp
