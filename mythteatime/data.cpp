@@ -5,7 +5,6 @@
 // myth
 #include <mythlogging.h>
 #include <dbutil.h>
-#include <mythuinotificationcenter.h>
 
 TeaTimeData::TeaTimeData():
     m_Timer(NULL)
@@ -21,8 +20,6 @@ TeaTimeData::TeaTimeData():
  **/
 bool TeaTimeData::initialize(void)
 {
-    m_NotifyId = MythUINotificationCenter::GetInstance()->Register(this);
-    LOG_Tea(LOG_INFO, QString("Got notification id: %1").arg(m_NotifyId));
 
     LOG_Tea(LOG_INFO, "Loading timers from DB");
     MSqlQuery query(MSqlQuery::InitCon());
@@ -39,7 +36,6 @@ bool TeaTimeData::initialize(void)
     {
         int tId = query.value(0).toInt();
         TimerData* d = new TimerData(tId);
-        d->setNotificationId(m_NotifyId);
         d->init();
         m_Timers.insert(d->Id, d);
         if (d->isActive())
@@ -69,7 +65,6 @@ void TeaTimeData::reInit(void)
 
 void TeaTimeData::shutdown(void)
 {
-    MythUINotificationCenter::GetInstance()->UnRegister(this, m_NotifyId);
 
     // todo: check wether a timer is currently executing 
     // abort execution before the timer is deleted..

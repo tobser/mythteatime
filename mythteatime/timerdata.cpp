@@ -313,6 +313,7 @@ void TimerData::setNextExecutionTime(bool startTimespanTimer )
             Reoccurrence = "time_span_active";
             nextExec = now.addSecs(Time_Span.hour() * 60 * 60)
                 .addSecs(Time_Span.minute() * 60)
+                .addSecs(Time_Span.minute())
                 .addSecs(Time_Span.second());
             saveExecTimeToDb(nextExec);
             return;
@@ -384,12 +385,6 @@ void TimerData::saveExecTimeToDb(QDateTime nextExecTime)
 
 void TimerData::exec(void)
 {
-    MythMainWindow *mainWin = GetMythMainWindow();
-    if (!mainWin)
-    {
-        LOG_Tea(LOG_WARNING, "Could not get main window.");
-        return;
-    }
 
     int actionCnt = Exec_Actions.count();
 
@@ -397,21 +392,16 @@ void TimerData::exec(void)
     QString popup_message = Message_Text;
     if (actionCnt > 0)
     {
-        QString info = QString("\n\n%1 actions will be run in %2s")
+        QString info = QString(" (%1 actions will be run in %2s)")
             .arg(actionCnt)
             .arg(wait);
         popup_message.append(info);
     }
 
-    LOG_Tea(LOG_INFO, QString("Popup: %1").arg(popup_message));
-    postNotification(Message_Text , popup_message, "" , actionCnt + 1 , 0); 
+    int total = actionCnt + 1 ;
 
-    //    // Pause playback (Will only work if your frontend contains the patches from ticket #10894).
-    //    QStringList sl ;
-    //    sl << "pauseplayback"; 
+    postNotification(popup_message, total, 0); 
 
-    //    MythEvent* me = new MythEvent(MythEvent::MythUserMessage, popup_message, sl);
-    //    QCoreApplication::instance()->postEvent(mainWin, me);
     sleep(wait);
 
 
@@ -423,9 +413,9 @@ void TimerData::exec(void)
     for (int i=0; i < actionCnt; i++)
     {
         TeaAction a = Exec_Actions[i];
-
-        postNotification(a.Action_Data, a.Action_Type, QString("step %1").arg(i +1 ), actionCnt +1 , i +1 ); 
-        sleep(1);
+        int step = i + 1;
+        postNotification((a.Action_Type +"("+ a.Action_Data +") %1/%2").arg( step ).arg(total ), total, step); 
+        sleep(wait);
 
         if (a.Action_Type == "JumpPoint")
         {
@@ -440,30 +430,56 @@ void TimerData::exec(void)
             runCommand(a.Action_Data);
         }
     }
+
+    postNotification("Done", total, total); 
 }
 
-void TimerData::postNotification(QString title, QString author, QString details, int  total, int  progress)
+void TimerData::postNotification(QString progressText, int  total, int  progress)
 {
-  //  MythNotification *n = new MythNotification(title, author, details);
-  //  n->SetId(m_NotificationId);
-  //  n->SetDuration(1);
-  //  MythUINotificationCenter::GetInstance()->Queue(*n); 
     if (!ShowMessage)
         return;
 
-    DMAP metadata;
-    metadata["minm"] = title;
-    metadata["asar"] = author;
-    metadata["asal"] = details;
+    if (total <= 0)
+        return;
 
-    MythNotification::Type t = (progress == 0 ? MythNotification::New : MythNotification::Update);
+    float p =(float) progress / total;
 
-    MythMediaNotification *n = new MythMediaNotification(t, NULL, metadata, total, (1 +progress));
+    
+    // set long duration to not vanish between updates
+    // the last one shall stay only 1 sec
+    int duration = (progress == total ? 1 : 100);
+
+    MythNotification *n;
+    if (progress == 0 )
+    {
+        m_NotificationId = MythUINotificationCenter::GetInstance()->Register(this);
+        DMAP dm;
+        dm["minm"] = Message_Text;
+
+        n = new MythMediaNotification(MythNotification::New, "alarm_clock.svg", dm , p, progressText);
+    }
+    else
+    {
+        n = new MythPlaybackNotification(MythNotification::Update, p , progressText);
+    }
+
     n->SetId(m_NotificationId);
+    n->SetParent(this);
+    n->SetDuration(duration);  
+    
+    LOG_Tea(LOG_INFO, QString("progresstext=\"%1\" id=\"%5\" duration=\"%6\" progress=\"%2/%3 => %4\"")
+                                .arg(progressText).arg(progress).arg(total).arg(p)
+                                .arg(m_NotificationId).arg(duration));
+
     MythUINotificationCenter::GetInstance()->Queue(*n); 
 
     delete n;
 
+    if (progress == total)
+    {
+        MythUINotificationCenter::GetInstance()->UnRegister(this, m_NotificationId);
+        m_NotificationId = -1;
+    }
 }
 
 void TimerData::runSysEvent(const QString & sysEventKey)

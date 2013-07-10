@@ -31,8 +31,6 @@ class TeaTimeData :public QObject
         QMap<int, TimerData *> m_Timers;
         QList<TimerData *> m_ActiveTimers;
 
-        uint32_t m_NotifyId;
-
     public slots:
         void checkTimers();
 
