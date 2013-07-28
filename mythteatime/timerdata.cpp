@@ -7,8 +7,7 @@
 #include <mythcontext.h>
 #include <mythevent.h>
 #include <mythsystem.h>
-#include <mythuinotificationcenter.h>
-//#include <mythuinotificationcenter.h>
+#include <mythnotificationcenter.h>
 
 // qt
 #include <QtCore>
@@ -452,7 +451,7 @@ void TimerData::postNotification(QString progressText, int  total, int  progress
     MythNotification *n;
     if (progress == 0 )
     {
-        m_NotificationId = MythUINotificationCenter::GetInstance()->Register(this);
+        m_NotificationId = MythNotificationCenter::GetInstance()->Register(this);
         DMAP dm;
         dm["minm"] = Message_Text;
 
@@ -471,13 +470,13 @@ void TimerData::postNotification(QString progressText, int  total, int  progress
                                 .arg(progressText).arg(progress).arg(total).arg(p)
                                 .arg(m_NotificationId).arg(duration));
 
-    MythUINotificationCenter::GetInstance()->Queue(*n); 
+    MythNotificationCenter::GetInstance()->Queue(*n); 
 
     delete n;
 
     if (progress == total)
     {
-        MythUINotificationCenter::GetInstance()->UnRegister(this, m_NotificationId);
+        MythNotificationCenter::GetInstance()->UnRegister(this, m_NotificationId);
         m_NotificationId = -1;
     }
 }
