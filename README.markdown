@@ -3,7 +3,10 @@ Mythteatime is small mythtv plugin which lets you create and edit timed events. 
 
 ## Features
 * create as many timers as needed
-* define reoccurring timers, timers by timespan or timers with a fixed execution time
+* define different types of timers:
+    * reoccurring timers
+    * timers by timespan
+    * timers with a fixed execution time
 * define multiple actions to execute when the timer expires:
     * execute jumppoints
     * run system key events
