@@ -151,10 +151,11 @@ void EditTimer::enableNoneTimespanUi(void)
     if (m_Data.Reoccurrence.startsWith("time_span"))
         m_Data.Reoccurrence = "one_shot";
 
-    onReoccurrenceSelctionComplete(m_Data.Reoccurrence);
+    onReoccurrenceSelectionComplete(m_Data.Reoccurrence);
 
     SetRedraw();
 }
+
 
 void EditTimer::buildActionButtonList(void)
 {
@@ -481,7 +482,8 @@ void EditTimer::onReoccurrenceClicked(void)
 
     st->AddScreen(sel);
 }
-void EditTimer::onReoccurrenceSelctionComplete(const QString selection)
+
+void EditTimer::onReoccurrenceSelectionComplete(const QString selection)
 {
     LOG_Tea(LOG_INFO, "Received selection "+ selection);
     m_Data.Reoccurrence = selection;
