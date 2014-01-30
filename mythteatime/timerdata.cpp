@@ -387,7 +387,7 @@ void TimerData::exec(void)
 
     int actionCnt = Exec_Actions.count();
 
-    int wait = 2;
+    int wait = 0;
     QString popup_message = Message_Text;
     if (actionCnt > 0)
     {
