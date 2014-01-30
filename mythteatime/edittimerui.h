@@ -54,6 +54,8 @@ class EditTimer : public MythScreenType
         void enableNoneTimespanUi(void);
         void enableTimespanUi(void);
         bool hasSysevents(void);
+        void updateTimeEditTextBox(void);
+
         MythDialogBox* createDialog(const QString title);
 
         MythUIButton     *m_OkButton;

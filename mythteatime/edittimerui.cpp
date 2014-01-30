@@ -140,7 +140,6 @@ void EditTimer::enableNoneTimespanUi(void)
     m_TimeSpinbox->SetEnabled(false);
     m_TimeSpinbox->Hide();
 
-    m_TimeEdit->SetText(m_Data.Date_Time.toString());
     m_TimeEdit->SetEnabled(true);
     m_TimeEdit->SetVisible(true);
 
@@ -263,7 +262,15 @@ bool EditTimer::updateLocalDataFromUi(QString & /*&err*/)
     else
     {
         // set date
-        m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
+        if (m_Data.Reoccurrence.startsWith("one_shot"))
+        {
+            m_Data.Date_Time = QDateTime::fromString(m_TimeEdit->GetText());
+        }
+        else
+        {
+            QTime newTime = QTime::fromString(m_TimeEdit->GetText());
+            m_Data.Date_Time.setTime(newTime);
+        }
     }
 
     if (!m_ShowMessageCb)
@@ -478,7 +485,13 @@ void EditTimer::onReoccurrenceClicked(void)
         return ;
     }
     connect(sel, SIGNAL(selectionCompleted(QString)),
-            this, SLOT(onReoccurrenceSelctionComplete(QString)));
+            this, SLOT(onReoccurrenceSelectionComplete(QString)));
+
+    // after confirming the dialog we update the the time edit box 
+    // in updateTimeEditTextBox() thus we have to save the data first
+    // to not reset the value to the one we read from DB
+    QString err;
+    updateLocalDataFromUi(err);
 
     st->AddScreen(sel);
 }
@@ -496,4 +509,15 @@ void EditTimer::onReoccurrenceSelectionComplete(const QString selection)
         text= tr("Days: %1").arg(selection);
 
     m_ReoccurrenceButton->SetText(text);
+    updateTimeEditTextBox();
+}
+
+void EditTimer::updateTimeEditTextBox(void)
+{
+    // if we only need the full date if it is a one shot timer
+    // else only the the time of the date is used
+    if (m_Data.Reoccurrence.startsWith("one_shot"))
+        m_TimeEdit->SetText(m_Data.Date_Time.toString());
+    else
+        m_TimeEdit->SetText(m_Data.Date_Time.time().toString());
 }
