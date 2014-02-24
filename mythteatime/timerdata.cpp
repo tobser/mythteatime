@@ -312,7 +312,6 @@ void TimerData::setNextExecutionTime(bool startTimespanTimer )
             Reoccurrence = "time_span_active";
             nextExec = now.addSecs(Time_Span.hour() * 60 * 60)
                 .addSecs(Time_Span.minute() * 60)
-                .addSecs(Time_Span.minute())
                 .addSecs(Time_Span.second());
             saveExecTimeToDb(nextExec);
             return;
