@@ -1,5 +1,5 @@
 
-LIBVERSION = 0.28
+LIBVERSION = 0.27
 
 INCLUDEPATH += $${SYSROOT}$${PREFIX}/include/mythtv
 INCLUDEPATH += $${SYSROOT}$${PREFIX}/include/mythtv/libmythbase
