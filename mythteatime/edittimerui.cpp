@@ -74,6 +74,10 @@ bool EditTimer::create(void)
     }
 
     m_TimeSpinbox->SetRange(0, 1439, 1, 5);
+
+    connect(m_TimeSpinbox, SIGNAL(itemClicked(MythUIButtonListItem *)),
+            this, SLOT(onOkClicked()));
+
     enableTimespanUi();
 
     if (m_Data.Id >= 0)
