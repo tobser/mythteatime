@@ -13,7 +13,6 @@ Mythteatime is small mythtv plugin which lets you create and edit timed events. 
     * run custom shell commands 
 
 ## Installation
-change into the mythteatime directory and run
 
     git clone git://github.com/tobser/mythteatime.git
     cd mythteatime
