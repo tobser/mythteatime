@@ -634,14 +634,13 @@ bool TimerData::saveToDb(bool startTimespanTimer)
 
 void TimerData::postTimerStartedNotification(void )
 {
-    if (isActive() == false)
-        return;
+    QString msg;
+    if (isActive())
+        msg = tr("Started. Remaining time: %1").arg(getRemainingTime());
+    else
+        msg = tr("Stopped.");
 
-    LOG_Tea(LOG_INFO, QString("Started notification."));
-    //MythNotificationCenter::GetInstance()->
-    ShowNotification(MythNotification::Info,Message_Text, "", 
-           tr("Started. Remaining time: %1").arg(getRemainingTime()),
-           ICON);
+    ShowNotification(MythNotification::Info,Message_Text, "", msg, ICON);
 }
 
 void TimerData::setTimeSpanFromSecs(int seconds)
