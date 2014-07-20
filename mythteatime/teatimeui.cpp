@@ -148,14 +148,17 @@ void TeaTime::openEditScreen(TimerData *td = NULL)
         return;
     }
 
-    connect(et, SIGNAL(editComplete()), this,
-            SLOT(onEditCompleted()),Qt::DirectConnection);
+    connect(et, SIGNAL(editComplete(bool)), this,
+            SLOT(onEditCompleted(bool)),Qt::DirectConnection);
 
     popupStack->AddScreen(et);
 }
 
-void TeaTime::onEditCompleted()
+void TeaTime::onEditCompleted(bool started)
 {
+    if (started)
+        Close();
+
     LOG_Tea(LOG_INFO, "Edit complete, reloading ui.");
     if (gTeaData)
     {

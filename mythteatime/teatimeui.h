@@ -31,7 +31,7 @@ class TeaTime : public MythScreenType
     public slots:
         void newClicked(void);
         void itemClicked(MythUIButtonListItem *);
-        void onEditCompleted();
+        void onEditCompleted(bool started);
 
     private slots:
         void refreshCountdown(void);

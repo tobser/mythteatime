@@ -187,7 +187,7 @@ void EditTimer::onDeleteClicked(void)
     {
         m_Data.removeFromDb();
     }
-    emit editComplete();
+    emit editComplete(false);
     Close();
 }
 
@@ -204,7 +204,7 @@ void EditTimer::onOkClicked(void)
 
     m_Data.saveToDb(true);
 
-    emit editComplete();
+    emit editComplete(m_Data.isActive());
     Close();
 }
 

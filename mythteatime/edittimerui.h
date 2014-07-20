@@ -44,7 +44,7 @@ class EditTimer : public MythScreenType
         void onReoccurrenceSelectionComplete(const QString selection);
 
     signals:
-        void editComplete(void);
+        void editComplete(bool started);
 
     private:
         bool updateLocalDataFromUi(QString &err);
