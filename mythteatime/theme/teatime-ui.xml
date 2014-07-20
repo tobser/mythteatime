@@ -182,14 +182,58 @@
             <value>Timer Description</value>
         </textarea>
 
+        <!-- actions to execute -->
+        <button name="add_action" from="basewidebutton">
+            <area>50,210,100%-50,40</area>
+            <value>Add action</value>
+        </button>
+
+        <shape name="action_list_bg">
+            <area>48,260,100%-48,200</area>
+            <type>roundbox</type>
+            <line color="#999999" alpha="255" width="2" />
+            <cornerradius>13</cornerradius>
+        </shape>
+
+        <buttonlist name="action_list">
+            <area>48,260,100%-48,200</area>
+            <layout>vertical</layout>
+            <spacing>4</spacing>
+            <wrapstyle>selection</wrapstyle>
+            <buttonarea>0,0,100%,100%</buttonarea>
+            <statetype name="buttonitem">
+                <area>0,0,100%,30</area>
+                <state name="active">
+                    <area>0,0,100%,30</area>
+                    <textarea name="action" >
+                        <area>40,5,100%-40,25</area>
+                        <template>
+                            %ORDER_NUMBER%.  %ACTION_TYPE%: %ACTION%
+                        </template>
+                    </textarea>
+                </state>
+                <state name="selectedactive" from="active">
+                    <shape name="selectbar">
+                        <area>0,0,100%,30</area>
+                        <type>roundbox</type>
+                        <line color="#999999" alpha="255" width="2" />
+                        <cornerradius>13</cornerradius>
+                    </shape>
+                </state>
+                <state name="selectedinactive" from="active" />
+            </statetype>
+
+        </buttonlist>
+
+        <!-- time setting -->
         <textarea name="fixed_time_description">
-            <area>100,210,100%-100,30</area>
+            <area>100,480,100%-100,30</area>
             <align>vcenter</align>
             <value>Use a fixed time instead of timespan.</value>
         </textarea>
 
         <checkbox name="fixed_time">
-            <area>50,210,30,30</area>
+            <area>50,480,30,30</area>
             <statetype name="background">
                 <state name="active">
                     <imagetype name="background">
@@ -220,7 +264,7 @@
         </checkbox>
 
         <spinbox name="time_span">
-            <area>50,250,600,40</area>
+            <area>50,520,600,40</area>
             <layout>horizontal</layout>
             <statetype name="buttonitem">
                 <area>0,0,600,40</area>
@@ -259,55 +303,14 @@
         </spinbox>
 
         <textedit name="time" from="basetextedit">
-            <area>50,250,50%-25,40</area>
+            <area>50,520,50%-25,40</area>
         </textedit>
 
         <button name="reoccurrence" from="basewidebutton">
-            <area>50%+25,250,100%-50,40</area>
+            <area>50%+25,520,100%-50,40</area>
             <value>One shot</value>
         </button>
 
-        <button name="add_action" from="basewidebutton">
-            <area>50,340,100%-50,40</area>
-            <value>Add action</value>
-        </button>
-
-        <shape name="action_list_bg">
-            <area>48,390,100%-48,200</area>
-            <type>roundbox</type>
-            <line color="#999999" alpha="255" width="2" />
-            <cornerradius>13</cornerradius>
-        </shape>
-
-        <buttonlist name="action_list">
-            <area>48,390,100%-48,200</area>
-            <layout>vertical</layout>
-            <spacing>4</spacing>
-            <wrapstyle>selection</wrapstyle>
-            <buttonarea>0,0,100%,100%</buttonarea>
-            <statetype name="buttonitem">
-                <area>0,0,100%,30</area>
-                <state name="active">
-                    <area>0,0,100%,30</area>
-                    <textarea name="action" >
-                        <area>40,5,100%-40,25</area>
-                        <template>
-                            %ORDER_NUMBER%.  %ACTION_TYPE%: %ACTION%
-                        </template>
-                    </textarea>
-                </state>
-                <state name="selectedactive" from="active">
-                    <shape name="selectbar">
-                        <area>0,0,100%,30</area>
-                        <type>roundbox</type>
-                        <line color="#999999" alpha="255" width="2" />
-                        <cornerradius>13</cornerradius>
-                    </shape>
-                </state>
-                <state name="selectedinactive" from="active" />
-            </statetype>
-
-        </buttonlist>
 
         <textarea name="infotext">
             <area>10,100%-130,100%-10,80</area>
