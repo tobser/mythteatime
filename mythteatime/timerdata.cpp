@@ -16,6 +16,8 @@
 
 #define tr(a) QObject::tr(a)
 
+#define ICON "alarm_clock.svg"
+
 TimerData::TimerData(int id):
     Id(id)
 {
@@ -156,20 +158,21 @@ void TimerData::toMap(InfoMap& map)
 
     if (isActive())
     {
-        QDateTime now = QDateTime::currentDateTime();
-        int secs = now.secsTo(Exec_Date_Time);
-        if (secs > 0)
-        {
-            int h=0 , m =0 , s =0;
-            secsTo(&h, &m, &s, secs);
-            QLatin1Char fill = QLatin1Char('0');
-            map["time_left"] = QString("%1:%2:%3").arg(h,2,10,fill)
-                                                  .arg(m,2,10,fill)
-                                                  .arg(s,2,10,fill);
-        }
+        map["time_left"] = getRemainingTime();
     }
 }
 
+QString TimerData::getRemainingTime(void)
+{
+    QDateTime now = QDateTime::currentDateTime();
+    int secs = now.secsTo(Exec_Date_Time);
+    int h=0 , m =0 , s =0;
+    secsTo(&h, &m, &s, secs);
+    QLatin1Char fill = QLatin1Char('0');
+    return QString("%1:%2:%3").arg(h,2,10,fill)
+        .arg(m,2,10,fill)
+        .arg(s,2,10,fill);
+}
 void TimerData::removeFromDb(void)
 {
     if (Id < 0)
@@ -454,7 +457,7 @@ void TimerData::postNotification(QString progressText, int  total, int  progress
         DMAP dm;
         dm["minm"] = Message_Text;
 
-        n = new MythMediaNotification(MythNotification::New, "alarm_clock.svg", dm , p, progressText);
+        n = new MythMediaNotification(MythNotification::New, ICON, dm , p, progressText);
     }
     else
     {
@@ -624,7 +627,21 @@ bool TimerData::saveToDb(bool startTimespanTimer)
         }
     }
 
+    postTimerStartedNotification();
+
     return true;
+}
+
+void TimerData::postTimerStartedNotification(void )
+{
+    if (isActive() == false)
+        return;
+
+    LOG_Tea(LOG_INFO, QString("Started notification."));
+    //MythNotificationCenter::GetInstance()->
+    ShowNotification(MythNotification::Info,Message_Text, "", 
+           tr("Started. Remaining time: %1").arg(getRemainingTime()),
+           ICON);
 }
 
 void TimerData::setTimeSpanFromSecs(int seconds)

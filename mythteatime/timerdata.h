@@ -62,6 +62,8 @@ Q_DECLARE_METATYPE(TeaAction)
                 *s = inSecs % 60;
             };
             void postNotification(QString progressText, int  step, int  totalSteps);
+            void postTimerStartedNotification(void);
+            QString getRemainingTime(void);
     };
 
 Q_DECLARE_METATYPE(TimerData)
