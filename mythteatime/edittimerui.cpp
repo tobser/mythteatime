@@ -113,6 +113,8 @@ bool EditTimer::create(void)
 
     if (m_Data.Id < 0)
         SetFocusWidget(m_MessageTextEdit);
+    else if (m_Data.Reoccurrence == "time_span")
+        SetFocusWidget(m_TimeSpinbox);
     else
         SetFocusWidget(m_OkButton);
 
