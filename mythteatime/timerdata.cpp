@@ -8,11 +8,15 @@
 #include <mythevent.h>
 #include <mythsystem.h>
 #include <mythnotificationcenter.h>
+#include <mythuihelper.h>
 
 // qt
 #include <QtCore>
 #include <QString>
 #include <QCoreApplication>
+
+
+#include <unistd.h>
 
 #define tr(a) QObject::tr(a)
 
