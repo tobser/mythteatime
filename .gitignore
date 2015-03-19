@@ -14,3 +14,7 @@ html/
 
 #ctags
 tags
+
+#kdevelop
+*.kdev4
+.kdev4/*
