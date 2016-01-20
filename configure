@@ -1,70 +1,18 @@
 #!/bin/sh 
 
-prefix="/usr/local"
-libdir_name="lib"
 sysroot=""
 ln_s="ln -sf"
 
 cc="gcc"
 qmake="qmake"
 
-targetos=`uname -s`
-
-if test x"$1" = x"-h" -o x"$1" = x"--help" ; then
-cat << EOF
-
-Usage:   configure [options]
-Options: [defaults in brackets after descriptions]
-
-Generic options:
-  --prefix=PREFIX          MythTV install location PREFIX [$prefix]
-  --sysroot=SYSROOT        MythTV sysroot location SYSROOT [$sysroot]
-  --qmake=QMAKE            use specified qmake [$qmake]
-  --libdir-name=LIBNAME    install/look for libs in PREFIX/LIBNAME [$libdir_name]
-  --help                   print this message
-
-EOF
-exit 0
-fi
-
-CMDLINE_SET="
-    qmake
-    sysroot
-"
-
-for opt do
-  optval="${opt#*=}"
-  case "$opt" in
-  --targetos=*) targetos=`echo $opt | cut -d '=' -f 2`
-  ;;
-  --prefix=*) prefix=`echo $opt | cut -d '=' -f 2`
-  ;;
-  --libdir-name=*) libdir_name=`echo $opt | cut -d '=' -f 2`;
-  ;;
-  *)
-  optname="${opt%%=*}"
-  optname="${optname#--}"
-  optname=$(echo "$optname" | sed 's/-/_/g')
-  if is_in $optname $CMDLINE_SET; then
-      eval $optname='$optval'
-  fi
-  esac
-done
-
-is_qmake4(){
-    $1 --version 2>&1 | egrep -q -e "Qt version 4\.[5-9]\.[0-9]"
-}
-
-
 # bring in mythtv config
-if [ -e $prefix/include/mythtv/mythconfig.mak ] ; then
+mythconfig=`find /usr/ -wholename "*/mythtv/mythconfig.mak"`
+if [ "x" != "x$mythconfig" -a  -e $mythconfig ] ; then
     rm mythconfig.mak 2> /dev/null
-    ${ln_s} $prefix/include/mythtv/mythconfig.mak mythconfig.mak
+    ${ln_s} $mythconfig mythconfig.mak
 else
-    echo "ERROR: mythconfig.mak not found at $prefix/include/mythtv/mythconfig.mak"
-    echo "Did you make AND install MythTV first?"
-    echo "Are you using the correct prefix ($prefix)?"
-    echo "Bailing out!!"
+    echo "ERROR: mythconfig.mak not found is 'libmyth-dev' installed?"
     exit
 fi
 
@@ -89,13 +37,5 @@ OPENGLV=$(cat mythconfig.mak | grep -e "^CONFIG_OPENGL_VIDEO=yes")
 
 EXTRALIBS=$(cat mythconfig.mak | grep -e "^EXTRALIBS=")
 EXTRALIBS=${EXTRALIBS#EXTRALIBS=}
-
-if ! is_qmake4 $qmake; then
-    is_qmake4 qmake-qt4 && qmake=qmake-qt4 || die "qmake for Qt4.6 or newer not found.\nPlease specify the correct qmake with --qmake="
-fi
-
-if ! expr $($qmake -query QT_VERSION) : "4\.[6-9]\.[0-9]" >/dev/null; then
-    die "Qt4.6 or newer is required to build MythTV."
-fi
 
 ${qmake} QMAKE=$(which ${qmake}) mythteatime.pro

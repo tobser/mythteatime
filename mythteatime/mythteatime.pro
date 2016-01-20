@@ -1,9 +1,9 @@
 include ( ../mythconfig.mak )
 include ( ../libs.pro )
 
-QT += network xml sql
+QT += network xml sql widgets concurrent
 TEMPLATE = lib
-CONFIG += debug plugin 
+CONFIG += debug plugin
 TARGET = mythteatime
 target.path = $${LIBDIR}/mythtv/plugins
 INSTALLS += target
@@ -21,9 +21,9 @@ HEADERS += edittimerui.h  selectreoccurrenceui.h
 SOURCES += main.cpp teatimeui.cpp data.cpp timerdata.cpp
 SOURCES += edittimerui.cpp selectreoccurrenceui.cpp
 
-doxy.target = doc 
+doxy.target = doc
 doxy.commands = doxygen Doxyfile;
-doxy.depends = 
+doxy.depends =
 
 QMAKE_EXTRA_TARGETS += doxy
 

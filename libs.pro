@@ -1,4 +1,3 @@
-
 LIBVERSION = 0.28
 
 INCLUDEPATH += $${SYSROOT}$${PREFIX}/include/mythtv

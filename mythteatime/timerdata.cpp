@@ -14,6 +14,7 @@
 #include <QtCore>
 #include <QString>
 #include <QCoreApplication>
+#include <QtConcurrent/QtConcurrent>
 
 
 #include <unistd.h>

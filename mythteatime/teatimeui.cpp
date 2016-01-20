@@ -84,7 +84,7 @@ void TeaTime::refreshCountdown(void)
     for (int i = 0 ; i < count; i++)
     {
         item = m_ButtonList->GetItemAt(i);
-        val = qVariantValue<TimerData>(item->GetData());
+        val = item->GetData().value<TimerData>();
 
         updateBtnText(item, &val);
     }
@@ -127,7 +127,7 @@ void TeaTime::newClicked(void)
 }
 void TeaTime::itemClicked(MythUIButtonListItem * item)
 {
-    TimerData val = qVariantValue<TimerData>(item->GetData());
+    TimerData val = item->GetData().value<TimerData>();
     openEditScreen(&val);
 }
 
