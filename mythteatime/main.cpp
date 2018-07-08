@@ -169,37 +169,35 @@ static bool updateDb()
     switch(dbVer)
     {
         case 0:
+            if (!CreateTable(query))
             {
-                if (!CreateTable(query))
-                {
-                    success = false;
-                    break;
-                }
+                success = false;
+                break;
             }
+            /* FALLTHRU */
         case 1:
+            if (!UpdateTableV1(query))
             {
-                if (!UpdateTableV1(query))
-                {
-                    success = false;
-                    break;
-                }
+                success = false;
+                break;
             }
+            /* FALLTHRU */
         case 2:
+            if (!UpdateTableV2(query))
             {
-                if (!UpdateTableV2(query))
-                {
-                    success = false;
-                    break;
-                }
+                success = false;
+                break;
             }
+            /* FALLTHRU */
         case 3:
+            if (!UpdateTableV3(query))
             {
-                if (!UpdateTableV3(query))
-                {
-                    success = false;
-                    break;
-                }
+                success = false;
+                break;
             }
+            /* FALLTHRU */
+        default:
+            break;
     }
 
     DBUtil::UnlockSchema(query);
